@@ -9,6 +9,7 @@ use Ashrafic\FilamentWebhookBridge\Commands\SyncHistoricalRecordsCommand;
 use Ashrafic\FilamentWebhookBridge\Commands\TestConnectionCommand;
 use Ashrafic\FilamentWebhookBridge\Listeners\WebhookEventSubscriber;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -32,6 +33,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
                 SyncHistoricalRecordsCommand::class,
                 TestConnectionCommand::class,
             ])
+            ->hasViews()
             ->hasTranslations();
     }
 
@@ -46,7 +48,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
         }
 
         if (config('filament-webhook-bridge.retention.prune_enabled', true)) {
-            $this->app->make(\Illuminate\Console\Scheduling\Schedule::class)
+            $this->app->make(Schedule::class)
                 ->command('webhook-bridge:prune-logs')
                 ->daily();
         }

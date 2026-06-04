@@ -1,0 +1,136 @@
+<?php
+
+namespace Ashrafic\FilamentWebhookBridge\Filament\Components;
+
+use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
+use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
+use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
+use Closure;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
+
+class ConditionBuilder extends Repeater
+{
+    protected string|Closure|null $modelClass = null;
+
+    protected string|Closure|null $event = null;
+
+    public function modelClass(string|Closure|null $modelClass): static
+    {
+        $this->modelClass = $modelClass;
+
+        return $this;
+    }
+
+    public function getModelClass(): ?string
+    {
+        return $this->evaluate($this->modelClass);
+    }
+
+    public function event(string|Closure|null $event): static
+    {
+        $this->event = $event;
+
+        return $this;
+    }
+
+    public function getEvent(): ?string
+    {
+        return $this->evaluate($this->event);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this
+            ->label('Conditions')
+            ->maxItems(10)
+            ->collapsible()
+            ->collapsed(fn ($state) => empty($state))
+            ->columnSpanFull()
+            ->columns(2)
+            ->schema([
+                Select::make('field')
+                    ->label('Field')
+                    ->required()
+                    ->options(function (Get $get, ConditionBuilder $component) {
+                        $modelClass = $component->getModelClass();
+
+                        if (! $modelClass || ! class_exists($modelClass)) {
+                            return [];
+                        }
+
+                        $analyzer = app(FieldSchemaAnalyzer::class);
+                        $attributes = $analyzer->getAttributeNames($modelClass);
+
+                        return collect($attributes)
+                            ->mapWithKeys(fn ($attr) => [
+                                (is_array($attr) ? $attr['name'] : $attr) => (is_array($attr) ? $attr['name'] : $attr),
+                            ])
+                            ->toArray();
+                    }),
+                Select::make('operator')
+                    ->label('Operator')
+                    ->required()
+                    ->options(function (ConditionBuilder $component) {
+                        $registry = app(ConditionRegistry::class);
+                        $event = $component->getEvent();
+
+                        if ($event && EventEnum::tryFrom($event) === EventEnum::Created) {
+                            $operators = $registry->forCreatedEvent();
+                        } else {
+                            $operators = $registry->all();
+                        }
+
+                        return collect($operators)
+                            ->mapWithKeys(fn ($op) => [$op->key() => $op->label()])
+                            ->toArray();
+                    })
+                    ->live()
+                    ->afterStateUpdated(function ($state, Select $component) {
+                        if (blank($state)) {
+                            return;
+                        }
+
+                        $registry = app(ConditionRegistry::class);
+
+                        try {
+                            $operator = $registry->get($state);
+
+                            if (! $operator->requiresValue()) {
+                                $component->getContainer()->getComponent('value')->state(null);
+                            }
+                        } catch (\InvalidArgumentException) {
+                        }
+                    }),
+                TextInput::make('value')
+                    ->label('Value')
+                    ->visible(function (Get $get) {
+                        $operatorKey = $get('operator');
+
+                        if (blank($operatorKey)) {
+                            return true;
+                        }
+
+                        $registry = app(ConditionRegistry::class);
+
+                        try {
+                            return $registry->get($operatorKey)->requiresValue();
+                        } catch (\InvalidArgumentException) {
+                            return true;
+                        }
+                    }),
+                Select::make('logic')
+                    ->label('Logic')
+                    ->options([
+                        'and' => 'AND',
+                        'or' => 'OR',
+                    ])
+                    ->default('and')
+                    ->visible(fn (string $context) => $context === 'edit'),
+            ]);
+    }
+}
