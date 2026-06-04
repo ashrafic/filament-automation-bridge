@@ -16,8 +16,6 @@ class ProcessHistoricalSyncBatch implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public string $queue;
-
     public function __construct(
         public string $batchUuid,
         public int $triggerId,
@@ -25,7 +23,7 @@ class ProcessHistoricalSyncBatch implements ShouldQueue
         public string $modelClass,
         public bool $applyConditions,
     ) {
-        $this->queue = config('filament-webhook-bridge.queue.historical_sync_queue_name', 'webhooks-sync');
+        $this->onQueue(config('filament-webhook-bridge.queue.historical_sync_queue_name', 'webhooks-sync'));
     }
 
     public function handle(HistoricalSyncService $syncService): void

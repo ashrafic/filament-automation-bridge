@@ -243,7 +243,7 @@ class HistoricalSyncService
             return $batchUuid;
         }
 
-        $modelClass::chunkById($batchSize, function ($models) use ($batchUuid, $trigger, $applyConditions, $delaySeconds) {
+        $modelClass::chunkById($batchSize, function ($models) use ($batchUuid, $trigger, $applyConditions, $delaySeconds, $modelClass) {
             $modelIds = $models->pluck($models->first()->getKeyName())->toArray();
 
             ProcessHistoricalSyncBatch::dispatch(
