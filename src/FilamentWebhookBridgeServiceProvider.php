@@ -4,6 +4,7 @@ namespace Ashrafic\FilamentWebhookBridge;
 
 use Ashrafic\FilamentWebhookBridge\Commands\InstallCommand;
 use Ashrafic\FilamentWebhookBridge\Commands\ModelCacheCommand;
+use Ashrafic\FilamentWebhookBridge\Commands\ProcessScheduledTriggersCommand;
 use Ashrafic\FilamentWebhookBridge\Commands\PruneDeliveryLogsCommand;
 use Ashrafic\FilamentWebhookBridge\Commands\SyncHistoricalRecordsCommand;
 use Ashrafic\FilamentWebhookBridge\Commands\TestConnectionCommand;
@@ -15,6 +16,8 @@ use Ashrafic\FilamentWebhookBridge\Formatters\ZapierFormatter;
 use Ashrafic\FilamentWebhookBridge\Listeners\WebhookEventSubscriber;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentWebhookBridge\Triggers\ModelEventTrigger;
+use Ashrafic\FilamentWebhookBridge\Triggers\StatusChangedTrigger;
 use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
@@ -42,6 +45,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
                 ModelCacheCommand::class,
                 SyncHistoricalRecordsCommand::class,
                 TestConnectionCommand::class,
+                ProcessScheduledTriggersCommand::class,
             ])
             ->hasViews()
             ->hasTranslations();
@@ -53,7 +57,13 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
 
         $this->app->singleton(ConditionRegistry::class);
 
-        $this->app->singleton(TriggerManager::class);
+        $this->app->singleton(TriggerManager::class, function () {
+            $manager = new TriggerManager;
+            $manager->register(ModelEventTrigger::class);
+            $manager->register(StatusChangedTrigger::class);
+
+            return $manager;
+        });
 
         $this->app->singleton('webhook-bridge', DeliveryService::class);
 
@@ -73,11 +83,92 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
             Event::listen('eloquent.*', [WebhookEventSubscriber::class, 'handle']);
         }
 
+        $this->app->make(Schedule::class)
+            ->command('webhook-bridge:process-scheduled')
+            ->everyMinute();
+
         if (config('filament-webhook-bridge.retention.prune_enabled', true)) {
             $this->app->make(Schedule::class)
                 ->command('webhook-bridge:prune-logs')
                 ->daily();
         }
+
+        Event::listen('*', function (string $eventName, array $payload) {
+            $eventClass = $eventName;
+
+            if (is_object($eventName)) {
+                $eventClass = get_class($eventName);
+            }
+
+            $triggerIds = \Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::getTriggerIdsForEvent($eventClass);
+
+            if (empty($triggerIds)) {
+                return;
+            }
+
+            $eventObject = $payload[0] ?? null;
+
+            if ($eventObject === null) {
+                return;
+            }
+
+            $triggerManager = app(\Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::class);
+            $deliveryService = app(DeliveryService::class);
+
+            $properties = [];
+            $reflection = new \ReflectionClass($eventObject);
+            foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $prop) {
+                if ($prop->isStatic()) {
+                    continue;
+                }
+
+                $properties[$prop->getName()] = $prop->isInitialized($eventObject) ? $prop->getValue($eventObject) : null;
+            }
+
+            $model = null;
+            foreach ($properties as $value) {
+                if ($value instanceof \Illuminate\Database\Eloquent\Model) {
+                    $model = $value;
+                    break;
+                }
+            }
+
+            foreach ($triggerIds as $triggerId) {
+                try {
+                    $trigger = \Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger::find($triggerId);
+
+                    if ($trigger === null || ! $trigger->active) {
+                        continue;
+                    }
+
+                    if ($model === null && class_exists($trigger->model_class)) {
+                        $modelClass = $trigger->model_class;
+                        $model = $modelClass::query()->latest()->first();
+                    }
+
+                    if ($model === null) {
+                        continue;
+                    }
+
+                    $triggerInstance = $triggerManager->get($trigger->trigger_type);
+
+                    if (! $triggerInstance->shouldFire($model, $trigger->trigger_config ?? [], [
+                        'event_class' => $eventClass,
+                        'event_properties' => $properties,
+                    ])) {
+                        continue;
+                    }
+
+                    $deliveryService->dispatchForEventTrigger($trigger, $model, $properties);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('EventTrigger: failed to process event', [
+                        'trigger_id' => $triggerId,
+                        'event_class' => $eventClass,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        });
 
         if (class_exists(WebhookCallSucceededEvent::class)) {
             Event::listen(WebhookCallSucceededEvent::class, function (WebhookCallSucceededEvent $event) {

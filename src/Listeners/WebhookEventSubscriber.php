@@ -5,12 +5,14 @@ namespace Ashrafic\FilamentWebhookBridge\Listeners;
 use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Illuminate\Database\Eloquent\Model;
 
 class WebhookEventSubscriber
 {
     public function __construct(
         protected DeliveryService $deliveryService,
+        protected TriggerManager $triggerManager,
     ) {}
 
     public function handle(string $event, array $payload): void
@@ -44,16 +46,28 @@ class WebhookEventSubscriber
         }
 
         foreach ($triggers as $trigger) {
-            if (! $this->shouldHandleEloquentEvent($trigger)) {
-                continue;
+            $context = [];
+
+            if ($trigger->isTriggerType('model-event')) {
+                $configEvent = $trigger->trigger_config['event'] ?? null;
+
+                if ($configEvent !== null && $configEvent !== $eventEnum->value) {
+                    continue;
+                }
+
+                $triggerContract = $this->triggerManager->get($trigger->trigger_type);
+                $context = $triggerContract->getContextData($model, $trigger->trigger_config ?? []);
+            } elseif ($trigger->isTriggerType('status-changed')) {
+                $triggerContract = $this->triggerManager->get($trigger->trigger_type);
+
+                if (! $triggerContract->shouldFire($model, $trigger->trigger_config ?? [], ['event' => $eventEnum->value])) {
+                    continue;
+                }
+
+                $context = $triggerContract->getContextData($model, $trigger->trigger_config ?? []);
             }
 
-            $this->deliveryService->dispatch($trigger, $model, $eventEnum, $model->getOriginal());
+            $this->deliveryService->dispatch($trigger, $model, $eventEnum, $model->getOriginal(), $context);
         }
-    }
-
-    protected function shouldHandleEloquentEvent(WebhookTrigger $trigger): bool
-    {
-        return $trigger->isTriggerType('model-event');
     }
 }

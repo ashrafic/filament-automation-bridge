@@ -5,6 +5,7 @@ namespace Ashrafic\FilamentWebhookBridge\Services;
 use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
 use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
 use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
+use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
 use Ashrafic\FilamentWebhookBridge\Events\WebhookDispatched;
 use Ashrafic\FilamentWebhookBridge\Exceptions\DeliveryFailedException;
 use Ashrafic\FilamentWebhookBridge\Jobs\ProcessWebhookDelivery;
@@ -26,7 +27,7 @@ class DeliveryService
         protected RateLimiterService $rateLimiterService,
     ) {}
 
-    public function dispatch(WebhookTrigger $trigger, Model $model, EventEnum $event, array $original = []): ?WebhookDelivery
+    public function dispatch(WebhookTrigger $trigger, Model $model, EventEnum $event, array $original = [], array $context = []): ?WebhookDelivery
     {
         try {
             if (! $this->conditionEvaluator->evaluate($model, $trigger->conditions, $original)) {
@@ -53,6 +54,8 @@ class DeliveryService
 
             return null;
         }
+
+        $payload['context'] = array_merge($payload['context'] ?? [], $context);
 
         $headers = $this->securityService->sign($payload, $trigger->secret);
 
@@ -113,13 +116,200 @@ class DeliveryService
         return $delivery;
     }
 
+    public function dispatchForSchedule(WebhookTrigger $trigger, Model $model): ?WebhookDelivery
+    {
+        return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, [
+            'schedule_type' => $trigger->trigger_config['schedule_type'] ?? 'daily',
+            'triggered_at' => now()->toIso8601String(),
+        ]);
+    }
+
+    public function dispatchForEventTrigger(WebhookTrigger $trigger, Model $model, array $eventProperties = []): ?WebhookDelivery
+    {
+        return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, [
+            'event_class' => $trigger->trigger_config['event_class'] ?? '',
+            'event_properties' => $eventProperties,
+            'triggered_at' => now()->toIso8601String(),
+        ]);
+    }
+
+    protected function dispatchGeneric(WebhookTrigger $trigger, Model $model, DeliverySource $source, array $triggerContext = []): ?WebhookDelivery
+    {
+        try {
+            $payload = $this->buildGenericPayload($trigger, $model, $triggerContext);
+        } catch (\Throwable $e) {
+            Log::error('DeliveryService: payload build failed', [
+                'trigger_id' => $trigger->id,
+                'model' => get_class($model),
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        $headers = $this->securityService->sign($payload, $trigger->secret);
+
+        $delivery = WebhookDelivery::create([
+            'trigger_id' => $trigger->id,
+            'model_type' => get_class($model),
+            'model_id' => $model->getKey(),
+            'payload' => $payload,
+            'headers' => $headers,
+            'status' => DeliveryStatus::Pending,
+            'retry_count' => 0,
+            'max_retries' => $trigger->max_retries ?? config('filament-webhook-bridge.retry.default_max_attempts', 3),
+            'source' => $source,
+            'dispatched_at' => now(),
+        ]);
+
+        if (config('filament-webhook-bridge.sandbox_mode', false)) {
+            $delivery->markSuccess(200, [], 'Sandbox mode - delivery simulated', 0);
+
+            Log::info('DeliveryService: sandbox mode - delivery simulated (generic)', [
+                'delivery_id' => $delivery->id,
+                'trigger_id' => $trigger->id,
+            ]);
+
+            return $delivery;
+        }
+
+        try {
+            $this->rateLimiterService->throttle($trigger->destination_url);
+        } catch (DeliveryFailedException $e) {
+            $delivery->markFailed(0, null, $e->getMessage(), null);
+
+            Log::warning('DeliveryService: rate limited (generic)', [
+                'delivery_id' => $delivery->id,
+                'trigger_id' => $trigger->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $delivery;
+        }
+
+        $queue = config('filament-webhook-bridge.queue.queue_name', 'webhooks');
+        $connection = config('filament-webhook-bridge.queue.connection');
+
+        ProcessWebhookDelivery::dispatch(
+            $delivery->id,
+            $delivery->payload,
+            $trigger->destination_url,
+            $trigger->secret,
+            $delivery->headers ?? [],
+            $trigger->webhook_timeout ?? 30,
+            $trigger->max_retries ?? config('filament-webhook-bridge.retry.default_max_attempts', 3),
+            $delivery->uuid,
+        )->onQueue($queue)->onConnection($connection);
+
+        WebhookDispatched::dispatch($delivery);
+
+        return $delivery;
+    }
+
+    protected function buildGenericPayload(WebhookTrigger $trigger, Model $model, array $triggerContext = []): array
+    {
+        $payloadMode = $trigger->payload_mode;
+
+        $data = match ($payloadMode) {
+            PayloadMode::Summary => $this->payloadBuilder->extractFields($model, $trigger->field_mapping ?? []),
+            PayloadMode::All => $this->payloadBuilder->extractAllAttributesProxy($model),
+            PayloadMode::Custom => $this->renderGenericTemplate($trigger->custom_payload_template ?? '', $model, $trigger->trigger_type),
+        };
+
+        $eventValue = $trigger->trigger_type ?? 'generic';
+
+        $envelope = [
+            'event' => $eventValue,
+            'model' => get_class($model),
+            'triggered_at' => now()->toIso8601String(),
+            'webhook_id' => $trigger->id,
+            'trigger_context' => $triggerContext,
+            'data' => $data,
+        ];
+
+        return $envelope;
+    }
+
+    protected function renderGenericTemplate(string $template, Model $model, string $triggerType): array
+    {
+        if (empty(trim($template))) {
+            return $model->toArray();
+        }
+
+        $replacements = [
+            'event' => $triggerType,
+            'model' => get_class($model),
+        ];
+
+        $modelAttributes = $model->toArray();
+        $allValues = array_merge($replacements, $modelAttributes);
+
+        $rendered = preg_replace_callback(
+            '/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/',
+            function ($match) use ($allValues) {
+                $key = $match[1];
+                $value = data_get($allValues, $key, $match[0]);
+
+                if (is_array($value) || is_object($value)) {
+                    return json_encode($value) ?: $match[0];
+                }
+
+                return (string) $value;
+            },
+            $template,
+        );
+
+        $decoded = json_decode($rendered, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
+            return ['raw' => $rendered];
+        }
+
+        return $decoded;
+    }
+
+    protected function extractAllAttributesProxy(Model $model): array
+    {
+        $hidden = $model->getHidden();
+        $excluded = config('filament-webhook-bridge.field_schema.excluded_attributes', [
+            'password',
+            'remember_token',
+            'api_token',
+        ]);
+
+        $attributes = $model->getAttributes();
+        $result = [];
+
+        foreach ($attributes as $key => $value) {
+            if (in_array($key, $hidden)) {
+                continue;
+            }
+
+            if (in_array($key, $excluded)) {
+                continue;
+            }
+
+            if ($this->isBinaryColumn($key, $model)) {
+                continue;
+            }
+
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
+    protected function isBinaryColumn(string $field, Model $model): bool
+    {
+        return false;
+    }
+
     public function getActiveTriggers(string $modelClass, EventEnum $event): Collection
     {
         return Cache::remember(
             "webhook_bridge.triggers.{$modelClass}.{$event->value}",
             300,
             fn () => WebhookTrigger::active()
-                ->where('trigger_type', 'model-event')
                 ->forModelEvent($modelClass, $event)
                 ->get(),
         );
