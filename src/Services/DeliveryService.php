@@ -131,6 +131,15 @@ class DeliveryService
         ], $contextData));
     }
 
+    public function dispatchForManualTrigger(WebhookTrigger $trigger, Model $model, ?int $userId = null): ?WebhookDelivery
+    {
+        return $this->dispatchGeneric($trigger, $model, DeliverySource::ManualRetry, [
+            'user_id' => $userId ?? auth()->id(),
+            'trigger_source' => 'manual',
+            'triggered_at' => now()->toIso8601String(),
+        ]);
+    }
+
     public function dispatchForEventTrigger(WebhookTrigger $trigger, Model $model, array $eventProperties = []): ?WebhookDelivery
     {
         return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, [

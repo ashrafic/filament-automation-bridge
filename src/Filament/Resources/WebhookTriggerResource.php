@@ -13,6 +13,7 @@ use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
 use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
 use Ashrafic\FilamentWebhookBridge\Services\ModelDiscoveryService;
+use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -58,37 +59,85 @@ class WebhookTriggerResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Trigger Configuration')
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true),
-                        Forms\Components\Textarea::make('description')
-                            ->maxLength(1000)
-                            ->columnSpanFull(),
-                        Forms\Components\Select::make('model_class')
-                            ->label('Model')
-                            ->options(fn () => app(ModelDiscoveryService::class)->getAllModels())
-                            ->searchable()
-                            ->required()
-                            ->live()
-                            ->placeholder('Select a model'),
-                        Forms\Components\Select::make('event')
-                            ->options(EventEnum::class)
-                            ->required()
-                            ->live(),
-                        Forms\Components\Select::make('destination_type')
-                            ->label('Destination Type')
-                            ->options(DestinationType::class)
-                            ->required(),
-                        Forms\Components\TextInput::make('destination_url')
-                            ->label('Destination URL')
-                            ->url()
-                            ->required()
-                            ->maxLength(2048),
-                        Forms\Components\Toggle::make('active')
-                            ->default(true),
-                    ])
+                    ->schema(function (Forms\Get $get) {
+                        $schema = [
+                            Forms\Components\TextInput::make('name')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true),
+                            Forms\Components\Textarea::make('description')
+                                ->maxLength(1000)
+                                ->columnSpanFull(),
+                            Forms\Components\Select::make('trigger_type')
+                                ->label('Trigger Type')
+                                ->options(fn () => app(TriggerManager::class)->options())
+                                ->default('model-event')
+                                ->required()
+                                ->live()
+                                ->afterStateUpdated(function (callable $set) {
+                                    $set('event', null);
+                                    $set('trigger_config', []);
+                                }),
+                            Forms\Components\Select::make('model_class')
+                                ->label('Model')
+                                ->options(fn () => app(ModelDiscoveryService::class)->getAllModels())
+                                ->searchable()
+                                ->required()
+                                ->live()
+                                ->placeholder('Select a model'),
+                        ];
+
+                        $triggerType = $get('trigger_type') ?? 'model-event';
+
+                        if ($triggerType === 'model-event') {
+                            $schema[] = Forms\Components\Select::make('event')
+                                ->options(EventEnum::class)
+                                ->required()
+                                ->live();
+                        }
+
+                        $triggerManager = app(TriggerManager::class);
+
+                        if ($triggerManager->get($triggerType)) {
+                            $configSchema = $triggerManager->get($triggerType)::configSchema();
+
+                            $skipFields = ['model_class'];
+
+                            if ($triggerType === 'model-event') {
+                                $skipFields[] = 'event';
+                            }
+
+                            foreach ($configSchema as $field) {
+                                $fieldName = $field->getName();
+
+                                if (in_array($fieldName, $skipFields)) {
+                                    continue;
+                                }
+
+                                if (! str_starts_with($fieldName, 'trigger_config.')) {
+                                    $field->statePath('trigger_config.' . $fieldName);
+                                }
+
+                                $schema[] = $field;
+                            }
+                        }
+
+                        $schema = array_merge($schema, [
+                            Forms\Components\Select::make('destination_type')
+                                ->label('Destination Type')
+                                ->options(DestinationType::class)
+                                ->required(),
+                            Forms\Components\TextInput::make('destination_url')
+                                ->label('Destination URL')
+                                ->url()
+                                ->required()
+                                ->maxLength(2048),
+                            Forms\Components\Toggle::make('active')
+                                ->default(true),
+                        ]);
+
+                        return $schema;
+                    })
                     ->columns(2),
 
                 Forms\Components\Section::make('Payload Configuration')
