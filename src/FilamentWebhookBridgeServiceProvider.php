@@ -16,7 +16,10 @@ use Ashrafic\FilamentWebhookBridge\Formatters\ZapierFormatter;
 use Ashrafic\FilamentWebhookBridge\Listeners\WebhookEventSubscriber;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentWebhookBridge\Triggers\EventTrigger;
+use Ashrafic\FilamentWebhookBridge\Triggers\ManualTrigger;
 use Ashrafic\FilamentWebhookBridge\Triggers\ModelEventTrigger;
+use Ashrafic\FilamentWebhookBridge\Triggers\ScheduleTrigger;
 use Ashrafic\FilamentWebhookBridge\Triggers\StatusChangedTrigger;
 use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Illuminate\Console\Scheduling\Schedule;
@@ -61,6 +64,9 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
             $manager = new TriggerManager;
             $manager->register(ModelEventTrigger::class);
             $manager->register(StatusChangedTrigger::class);
+            $manager->register(ScheduleTrigger::class);
+            $manager->register(ManualTrigger::class);
+            $manager->register(EventTrigger::class);
 
             return $manager;
         });
@@ -94,6 +100,10 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
         }
 
         Event::listen('*', function (string $eventName, array $payload) {
+            if (! \Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::hasEventSubscriptions()) {
+                return;
+            }
+
             $eventClass = $eventName;
 
             if (is_object($eventName)) {
