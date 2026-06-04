@@ -1,0 +1,61 @@
+{
+    "name": "ashrafic/filament-webhook-bridge",
+    "description": "Filament plugin for bridging Eloquent model events to external webhooks with conditional logic, payload formatting, and delivery tracking",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "filament",
+        "laravel",
+        "webhook",
+        "zapier",
+        "make",
+        "n8n",
+        "filament-plugin"
+    ],
+    "authors": [
+        {
+            "name": "Ashraf Islam",
+            "email": "ashraf@ashrafic.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^5.0",
+        "spatie/laravel-webhook-server": "^3.8",
+        "spatie/laravel-package-tools": "^1.15"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0",
+        "phpunit/phpunit": "^10.0|^11.0",
+        "mockery/mockery": "^1.6",
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ashrafic\\FilamentWebhookBridge\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ashrafic\\FilamentWebhookBridge\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ashrafic\\FilamentWebhookBridge\\FilamentWebhookBridgeServiceProvider"
+            ],
+            "aliases": {
+                "WebhookBridge": "Ashrafic\\FilamentWebhookBridge\\Facades\\WebhookBridge"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "pint": "vendor/bin/pint",
+        "pint-test": "vendor/bin/pint --test"
+    }
+}
