@@ -42,7 +42,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
         $this->app->singleton('webhook-bridge', DeliveryService::class);
 
         if (config('filament-webhook-bridge.models.paths')) {
-            Event::subscribe(WebhookEventSubscriber::class);
+            Event::listen('eloquent.*', [WebhookEventSubscriber::class, 'handle']);
         }
 
         if (config('filament-webhook-bridge.retention.prune_enabled', true)) {
