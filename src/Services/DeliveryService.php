@@ -118,7 +118,10 @@ class DeliveryService
         return Cache::remember(
             "webhook_bridge.triggers.{$modelClass}.{$event->value}",
             300,
-            fn () => WebhookTrigger::active()->forModelEvent($modelClass, $event)->get(),
+            fn () => WebhookTrigger::active()
+                ->where('trigger_type', 'model-event')
+                ->forModelEvent($modelClass, $event)
+                ->get(),
         );
     }
 

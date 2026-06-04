@@ -21,6 +21,8 @@ class WebhookTrigger extends Model
         'description',
         'model_class',
         'event',
+        'trigger_type',
+        'trigger_config',
         'destination_type',
         'destination_url',
         'field_mapping',
@@ -40,11 +42,13 @@ class WebhookTrigger extends Model
         'field_mapping' => 'array',
         'conditions' => 'array',
         'ip_whitelist' => 'array',
+        'trigger_config' => 'array',
         'active' => 'boolean',
         'encrypt_payload' => 'boolean',
         'webhook_timeout' => 'integer',
         'max_retries' => 'integer',
         'event' => EventEnum::class,
+        'trigger_type' => 'string',
         'destination_type' => DestinationType::class,
         'payload_mode' => PayloadMode::class,
     ];
@@ -96,11 +100,28 @@ class WebhookTrigger extends Model
     protected static function booted(): void
     {
         static::saved(function (self $trigger) {
-            Cache::forget("webhook_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
+            if ($trigger->event !== null) {
+                Cache::forget("webhook_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
+            }
+
+            if ($trigger->trigger_type !== null && $trigger->active && ! $trigger->isTriggerType('model-event')) {
+                app(\Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::class)->subscribe($trigger);
+            }
         });
 
         static::deleted(function (self $trigger) {
-            Cache::forget("webhook_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
+            if ($trigger->event !== null) {
+                Cache::forget("webhook_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
+            }
+
+            if ($trigger->trigger_type !== null && ! $trigger->isTriggerType('model-event')) {
+                app(\Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::class)->unsubscribe($trigger);
+            }
         });
+    }
+
+    public function isTriggerType(string $type): bool
+    {
+        return $this->trigger_type === $type;
     }
 }

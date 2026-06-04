@@ -3,6 +3,7 @@
 namespace Ashrafic\FilamentWebhookBridge\Listeners;
 
 use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
+use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,7 +44,16 @@ class WebhookEventSubscriber
         }
 
         foreach ($triggers as $trigger) {
+            if (! $this->shouldHandleEloquentEvent($trigger)) {
+                continue;
+            }
+
             $this->deliveryService->dispatch($trigger, $model, $eventEnum, $model->getOriginal());
         }
+    }
+
+    protected function shouldHandleEloquentEvent(WebhookTrigger $trigger): bool
+    {
+        return $trigger->isTriggerType('model-event');
     }
 }

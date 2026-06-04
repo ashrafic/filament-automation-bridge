@@ -15,6 +15,7 @@ use Ashrafic\FilamentWebhookBridge\Formatters\ZapierFormatter;
 use Ashrafic\FilamentWebhookBridge\Listeners\WebhookEventSubscriber;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelPackageTools\Package;
@@ -33,6 +34,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
                 'create_webhook_triggers_table',
                 'create_webhook_deliveries_table',
                 'create_webhook_templates_table',
+                'add_trigger_type_to_webhook_triggers_table',
             ])
             ->hasCommands([
                 InstallCommand::class,
@@ -50,6 +52,8 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
         parent::packageRegistered();
 
         $this->app->singleton(ConditionRegistry::class);
+
+        $this->app->singleton(TriggerManager::class);
 
         $this->app->singleton('webhook-bridge', DeliveryService::class);
 
