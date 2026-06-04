@@ -4,6 +4,7 @@ namespace Ashrafic\FilamentWebhookBridge\Commands;
 
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Cron\CronExpression;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
@@ -72,7 +73,76 @@ class ProcessScheduledTriggersCommand extends Command
 
         $this->info("Processed {$triggers->count()} schedule triggers. Dispatched: {$dispatched}, Skipped: {$skipped}.");
 
+        $this->processDateConditionTriggers();
+
         return self::SUCCESS;
+    }
+
+    protected function processDateConditionTriggers(): void
+    {
+        $triggers = WebhookTrigger::active()
+            ->where('trigger_type', 'date-condition')
+            ->get();
+
+        if ($triggers->isEmpty()) {
+            return;
+        }
+
+        $triggerManager = app(TriggerManager::class);
+        $deliveryService = app(DeliveryService::class);
+        $dispatched = 0;
+
+        foreach ($triggers as $trigger) {
+            $modelClass = $trigger->model_class;
+
+            if (! class_exists($modelClass)) {
+                $this->warn("Model class [{$modelClass}] not found for date-condition trigger [{$trigger->name}].");
+
+                continue;
+            }
+
+            $triggerInstance = $triggerManager->get('date-condition');
+            $config = $trigger->trigger_config ?? [];
+
+            $modelClass::query()->chunkById(100, function ($records) use ($trigger, $triggerInstance, $config, $deliveryService, &$dispatched) {
+                foreach ($records as $record) {
+                    $cacheKey = "webhook_bridge.date_condition.last_run.{$trigger->id}.{$record->getKey()}";
+                    $today = now()->toDateString();
+
+                    if (Cache::get($cacheKey) === $today) {
+                        continue;
+                    }
+
+                    try {
+                        if (! $triggerInstance->shouldFire($record, $config)) {
+                            continue;
+                        }
+                    } catch (\Throwable $e) {
+                        $this->warn("shouldFire failed for record {$record->getKey()}: {$e->getMessage()}");
+
+                        continue;
+                    }
+
+                    $contextData = $triggerInstance->getContextData($record, $config);
+
+                    try {
+                        $delivery = $deliveryService->dispatchForDateCondition($trigger, $record, $contextData);
+
+                        if ($delivery) {
+                            $dispatched++;
+                        }
+
+                        Cache::put($cacheKey, $today, now()->addDays(60));
+                    } catch (\Throwable $e) {
+                        $this->error("Failed to dispatch date-condition trigger [{$trigger->name}] for record {$record->getKey()}: {$e->getMessage()}");
+                    }
+                }
+            });
+        }
+
+        if ($dispatched > 0) {
+            $this->info("Processed date-condition triggers. Dispatched: {$dispatched}.");
+        }
     }
 
     protected function shouldRun(WebhookTrigger $trigger, string $scheduleType, array $config): bool

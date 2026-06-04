@@ -2,6 +2,7 @@
 
 namespace Ashrafic\FilamentWebhookBridge\Services;
 
+use Ashrafic\FilamentWebhookBridge\Concerns\HasWebhookTriggers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -115,5 +116,39 @@ class ModelDiscoveryService
         $fqcn = $namespace.'\\'.$classname;
 
         return $fqcn;
+    }
+
+    public function discoverTriggerableModels(): array
+    {
+        $models = $this->getAllModels();
+        $result = [];
+
+        foreach ($models as $fqcn => $basename) {
+            if (class_exists($fqcn) && $this->hasWebhookTriggersTrait($fqcn)) {
+                $result[$fqcn] = static::getModelDisplayName($fqcn);
+            }
+        }
+
+        return $result;
+    }
+
+    protected function hasWebhookTriggersTrait(string $class): bool
+    {
+        if (! class_exists($class)) {
+            return false;
+        }
+
+        $traits = class_uses_recursive($class);
+
+        return in_array(HasWebhookTriggers::class, $traits);
+    }
+
+    public static function getModelDisplayName(string $class): string
+    {
+        if (class_exists($class) && method_exists($class, 'getWebhookDisplayName')) {
+            return $class::getWebhookDisplayName();
+        }
+
+        return class_basename($class);
     }
 }

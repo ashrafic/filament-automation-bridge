@@ -124,6 +124,13 @@ class DeliveryService
         ]);
     }
 
+    public function dispatchForDateCondition(WebhookTrigger $trigger, Model $model, array $contextData = []): ?WebhookDelivery
+    {
+        return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, array_merge([
+            'triggered_at' => now()->toIso8601String(),
+        ], $contextData));
+    }
+
     public function dispatchForEventTrigger(WebhookTrigger $trigger, Model $model, array $eventProperties = []): ?WebhookDelivery
     {
         return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, [
