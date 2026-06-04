@@ -13,6 +13,7 @@ use Ashrafic\FilamentWebhookBridge\Formatters\MakeFormatter;
 use Ashrafic\FilamentWebhookBridge\Formatters\N8nFormatter;
 use Ashrafic\FilamentWebhookBridge\Formatters\ZapierFormatter;
 use Ashrafic\FilamentWebhookBridge\Listeners\WebhookEventSubscriber;
+use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Event;
@@ -76,7 +77,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
 
         if (class_exists(WebhookCallSucceededEvent::class)) {
             Event::listen(WebhookCallSucceededEvent::class, function (WebhookCallSucceededEvent $event) {
-                $delivery = \Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery::where('uuid', $event->uuid ?? '')->first();
+                $delivery = WebhookDelivery::where('uuid', $event->uuid ?? '')->first();
 
                 if ($delivery) {
                     app(DeliveryService::class)->handleSpatieSuccess($delivery, $event->response);
@@ -84,7 +85,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
             });
 
             Event::listen(WebhookCallFailedEvent::class, function (WebhookCallFailedEvent $event) {
-                $delivery = \Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery::where('uuid', $event->uuid ?? '')->first();
+                $delivery = WebhookDelivery::where('uuid', $event->uuid ?? '')->first();
 
                 if ($delivery) {
                     app(DeliveryService::class)->handleSpatieFailure($delivery, new \RuntimeException($event->errorMessage ?? 'Webhook call failed'));

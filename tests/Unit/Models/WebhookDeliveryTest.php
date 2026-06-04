@@ -4,8 +4,8 @@ namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Models;
 
 use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
 use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
+use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
@@ -32,7 +32,7 @@ class WebhookDeliveryTest extends TestCase
     protected function createDelivery(array $overrides = []): WebhookDelivery
     {
         $trigger = $overrides['trigger_id'] ?? null;
-        if (!$trigger instanceof WebhookTrigger) {
+        if (! $trigger instanceof WebhookTrigger) {
             $trigger = $this->createTrigger();
         }
 

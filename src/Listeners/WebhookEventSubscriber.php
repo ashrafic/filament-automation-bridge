@@ -14,7 +14,7 @@ class WebhookEventSubscriber
 
     public function handle(string $event, array $payload): void
     {
-        if (empty($payload) || !($payload[0] instanceof Model)) {
+        if (empty($payload) || ! ($payload[0] instanceof Model)) {
             return;
         }
 

@@ -26,7 +26,7 @@ abstract class TestCase extends BaseTestCase
             'database' => ':memory:',
         ]);
         $app['config']->set('queue.default', 'sync');
-        $app['config']->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
+        $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
     }
 
     protected function defineDatabaseMigrations(): void

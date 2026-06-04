@@ -4,8 +4,8 @@ namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
 
 use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
 use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
+use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
 use Ashrafic\FilamentWebhookBridge\Exceptions\SecurityException;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
@@ -52,7 +52,7 @@ class SecurityServiceTest extends TestCase
         $headers1 = $this->service->sign($payload, $secret);
         $timestamp = $headers1['X-Webhook-Timestamp'];
 
-        $expectedSig = 'sha256=' . hash_hmac('sha256', $timestamp . '.' . json_encode($payload), $secret);
+        $expectedSig = 'sha256='.hash_hmac('sha256', $timestamp.'.'.json_encode($payload), $secret);
         $this->assertSame($expectedSig, $headers1['X-Webhook-Signature']);
     }
 

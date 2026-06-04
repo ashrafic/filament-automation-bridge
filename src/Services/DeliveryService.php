@@ -10,10 +10,10 @@ use Ashrafic\FilamentWebhookBridge\Exceptions\DeliveryFailedException;
 use Ashrafic\FilamentWebhookBridge\Jobs\ProcessWebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\ResponseInterface;
 
@@ -225,7 +225,7 @@ class DeliveryService
         $error = null;
 
         try {
-            $client = new \GuzzleHttp\Client(['timeout' => 30]);
+            $client = new Client(['timeout' => 30]);
 
             $response = $client->post($trigger->destination_url, [
                 'json' => $payload,

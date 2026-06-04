@@ -43,7 +43,7 @@ class SyncHistoricalRecordsCommand extends Command
         $this->line("  Model: {$trigger->model_class}");
         $this->line("  Event: {$trigger->event->getLabel()}");
         $this->line("  Batch size: {$batchSize}");
-        $this->line("  Apply conditions: ".($applyConditions ? 'Yes' : 'No'));
+        $this->line('  Apply conditions: '.($applyConditions ? 'Yes' : 'No'));
 
         try {
             $batchUuid = app(HistoricalSyncService::class)->startSync(

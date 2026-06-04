@@ -203,10 +203,10 @@ class WebhookTriggerTest extends TestCase
             'event' => EventEnum::Created,
         ]);
 
-        Cache::put("webhook_bridge.triggers.App\\Models\\User.created", 'cached-value');
+        Cache::put('webhook_bridge.triggers.App\\Models\\User.created', 'cached-value');
 
         $trigger->delete();
 
-        $this->assertNull(Cache::get("webhook_bridge.triggers.App\\Models\\User.created"));
+        $this->assertNull(Cache::get('webhook_bridge.triggers.App\\Models\\User.created'));
     }
 }

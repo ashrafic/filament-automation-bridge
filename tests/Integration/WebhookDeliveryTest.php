@@ -4,8 +4,8 @@ namespace Ashrafic\FilamentWebhookBridge\Tests\Integration;
 
 use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
 use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
+use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
@@ -198,7 +198,7 @@ class WebhookDeliveryTest extends TestCase
         $this->assertSame(200, $fresh->http_status);
     }
 
-    public function test_getActiveTriggers_returns_matching_triggers(): void
+    public function test_get_active_triggers_returns_matching_triggers(): void
     {
         $trigger1 = $this->createTrigger([
             'model_class' => TestUser::class,

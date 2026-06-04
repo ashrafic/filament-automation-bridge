@@ -133,7 +133,7 @@ class ConditionEvaluator
                     continue;
                 }
 
-                $accessor = 'get' . ucfirst($segment) . 'Attribute';
+                $accessor = 'get'.ucfirst($segment).'Attribute';
 
                 if (method_exists($current, $accessor)) {
                     $current = $current->$accessor();

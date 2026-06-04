@@ -25,7 +25,7 @@ class EventEnumTest extends TestCase
         $this->assertSame('forceDeleted', EventEnum::ForceDeleted->eloquentEvent());
     }
 
-    public function test_can_be_created_from_string_via_tryFrom(): void
+    public function test_can_be_created_from_string_via_try_from(): void
     {
         $this->assertSame(EventEnum::Created, EventEnum::tryFrom('created'));
         $this->assertSame(EventEnum::Updated, EventEnum::tryFrom('updated'));

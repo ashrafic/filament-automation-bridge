@@ -4,6 +4,8 @@ namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
 
 use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
 use Ashrafic\FilamentWebhookBridge\Services\ConditionEvaluator;
+use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestLead;
+use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder;
 use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
 use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
 
@@ -88,7 +90,7 @@ class ConditionEvaluatorTest extends TestCase
     {
         $user = $this->createUser();
 
-        $order = \Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder::create([
+        $order = TestOrder::create([
             'user_id' => $user->id,
             'total' => 100.50,
             'status' => 'pending',
@@ -105,7 +107,7 @@ class ConditionEvaluatorTest extends TestCase
     {
         $user = $this->createUser();
 
-        $order = \Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder::create([
+        $order = TestOrder::create([
             'user_id' => $user->id,
             'total' => 25.00,
             'status' => 'pending',
@@ -121,7 +123,7 @@ class ConditionEvaluatorTest extends TestCase
     public function test_is_empty_operator_with_null(): void
     {
         $user = $this->createUser();
-        $lead = \Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestLead::create([
+        $lead = TestLead::create([
             'name' => 'Lead',
             'email' => 'lead@example.com',
             'phone' => null,

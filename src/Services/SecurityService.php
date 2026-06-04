@@ -19,12 +19,12 @@ class SecurityService
         $timestamp = time();
         $signature = hash_hmac(
             'sha256',
-            $timestamp . '.' . json_encode($payload),
+            $timestamp.'.'.json_encode($payload),
             $secret
         );
 
         return [
-            'X-Webhook-Signature' => 'sha256=' . $signature,
+            'X-Webhook-Signature' => 'sha256='.$signature,
             'X-Webhook-Timestamp' => (string) $timestamp,
         ];
     }

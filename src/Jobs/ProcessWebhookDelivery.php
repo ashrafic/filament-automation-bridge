@@ -6,13 +6,15 @@ use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
 use Ashrafic\FilamentWebhookBridge\Events\WebhookDeliveryCompleted;
 use Ashrafic\FilamentWebhookBridge\Events\WebhookDeliveryFailed;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class ProcessWebhookDelivery implements ShouldQueue
 {
@@ -54,7 +56,7 @@ class ProcessWebhookDelivery implements ShouldQueue
         if ($this->checkActive) {
             $trigger = $delivery->trigger;
 
-            if ($trigger === null || !$trigger->active) {
+            if ($trigger === null || ! $trigger->active) {
                 $delivery->update(['status' => DeliveryStatus::Cancelled->value]);
 
                 return;
@@ -79,7 +81,7 @@ class ProcessWebhookDelivery implements ShouldQueue
         $startTime = microtime(true);
 
         try {
-            $client = new \GuzzleHttp\Client([
+            $client = new Client([
                 'timeout' => $this->webhookTimeout,
                 'http_errors' => false,
             ]);
@@ -124,14 +126,14 @@ class ProcessWebhookDelivery implements ShouldQueue
 
                 event(new WebhookDeliveryFailed($delivery, "HTTP error: {$httpStatus}"));
             }
-        } catch (\GuzzleHttp\Exception\ConnectException $e) {
+        } catch (ConnectException $e) {
             Log::warning('ProcessWebhookDelivery: connection error', [
                 'delivery_id' => $this->deliveryId,
                 'error' => $e->getMessage(),
             ]);
 
             throw $e;
-        } catch (\GuzzleHttp\Exception\GuzzleException $e) {
+        } catch (GuzzleException $e) {
             $durationMs = (int) ((microtime(true) - $startTime) * 1000);
 
             $delivery->markFailed(
@@ -175,6 +177,6 @@ class ProcessWebhookDelivery implements ShouldQueue
 
     public function tags(): array
     {
-        return ['webhook-bridge', 'delivery:' . $this->deliveryId];
+        return ['webhook-bridge', 'delivery:'.$this->deliveryId];
     }
 }

@@ -7,7 +7,6 @@ use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
 use Ashrafic\FilamentWebhookBridge\Exceptions\InvalidPayloadException;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
 use Ashrafic\FilamentWebhookBridge\Services\PayloadBuilder;
 use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder;
 use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrderItem;

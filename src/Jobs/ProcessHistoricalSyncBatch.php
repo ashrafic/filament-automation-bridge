@@ -38,7 +38,7 @@ class ProcessHistoricalSyncBatch implements ShouldQueue
 
         $trigger = WebhookTrigger::find($this->triggerId);
 
-        if ($trigger === null || !$trigger->active) {
+        if ($trigger === null || ! $trigger->active) {
             Log::warning('ProcessHistoricalSyncBatch: trigger not found or inactive', [
                 'batch_uuid' => $this->batchUuid,
                 'trigger_id' => $this->triggerId,
@@ -57,6 +57,6 @@ class ProcessHistoricalSyncBatch implements ShouldQueue
 
     public function tags(): array
     {
-        return ['webhook-bridge', 'sync:' . $this->batchUuid];
+        return ['webhook-bridge', 'sync:'.$this->batchUuid];
     }
 }

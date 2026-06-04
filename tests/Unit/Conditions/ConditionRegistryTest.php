@@ -3,15 +3,8 @@
 namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Conditions;
 
 use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\ChangedOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\ChangedToOperator;
 use Ashrafic\FilamentWebhookBridge\Conditions\Operators\ContainsOperator;
 use Ashrafic\FilamentWebhookBridge\Conditions\Operators\EqualsOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\GreaterThanOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\IsEmptyOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\IsNotEmptyOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\LessThanOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\NotEqualsOperator;
 use Ashrafic\FilamentWebhookBridge\Contracts\ConditionOperator;
 use PHPUnit\Framework\TestCase;
 
