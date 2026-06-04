@@ -8,7 +8,6 @@ use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
 use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File;
 
 class ModelDiscoveryServiceTest extends TestCase
 {

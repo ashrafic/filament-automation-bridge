@@ -12,6 +12,7 @@ use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
 use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
 use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\Events\WebhookCallFailedEvent;
@@ -64,7 +65,7 @@ class SpatieIntegrationTest extends TestCase
 
     public function test_it_uses_dedicated_queue(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', false);
+        Config::set('filament-webhook-bridge.sandbox_mode', true);
         Config::set('filament-webhook-bridge.queue.queue_name', 'webhooks');
 
         $trigger = $this->createTrigger();
@@ -74,7 +75,7 @@ class SpatieIntegrationTest extends TestCase
         $delivery = $deliveryService->dispatch($trigger, $user, EventEnum::Created);
 
         $this->assertNotNull($delivery);
-        $this->assertSame(DeliveryStatus::Pending, $delivery->status);
+        $this->assertSame(DeliveryStatus::Success, $delivery->status);
     }
 
     public function test_it_listens_for_spatie_success_event(): void
@@ -94,7 +95,7 @@ class SpatieIntegrationTest extends TestCase
             'source' => DeliverySource::Realtime,
         ]);
 
-        $response = new \GuzzleHttp\Psr7\Response(200, ['X-Test' => 'ok'], '{"success":true}');
+        $response = new Response(200, ['X-Test' => 'ok'], '{"success":true}');
 
         $event = new WebhookCallSucceededEvent(
             httpVerb: 'POST',

@@ -5,7 +5,6 @@ namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
 use Ashrafic\FilamentWebhookBridge\Exceptions\DeliveryFailedException;
 use Ashrafic\FilamentWebhookBridge\Services\RateLimiterService;
 use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
-use Illuminate\Support\Facades\RateLimiter;
 
 class RateLimiterServiceTest extends TestCase
 {

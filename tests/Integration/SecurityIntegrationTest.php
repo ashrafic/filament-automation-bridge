@@ -11,8 +11,8 @@ use Ashrafic\FilamentWebhookBridge\Exceptions\SecurityException;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\SecurityService;
+use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
 use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
-use Illuminate\Support\Facades\Config;
 
 class SecurityIntegrationTest extends TestCase
 {
@@ -22,7 +22,7 @@ class SecurityIntegrationTest extends TestCase
     {
         return WebhookTrigger::create(array_merge([
             'name' => 'Security Test Trigger',
-            'model_class' => \Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser::class,
+            'model_class' => TestUser::class,
             'event' => EventEnum::Created,
             'destination_type' => DestinationType::Custom,
             'destination_url' => 'https://example.com/webhook',
