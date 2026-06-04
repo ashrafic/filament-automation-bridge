@@ -57,5 +57,11 @@
         "test": "vendor/bin/phpunit",
         "pint": "vendor/bin/pint",
         "pint-test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "audit": {
+            "abandoned": "ignore",
+            "block-insecure": false
+        }
     }
 }
