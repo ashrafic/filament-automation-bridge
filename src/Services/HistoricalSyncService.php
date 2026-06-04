@@ -5,6 +5,7 @@ namespace Ashrafic\FilamentWebhookBridge\Services;
 use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
 use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
 use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
+use Ashrafic\FilamentWebhookBridge\Events\HistoricalSyncCompleted;
 use Ashrafic\FilamentWebhookBridge\Jobs\ProcessHistoricalSyncBatch;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
@@ -249,6 +250,7 @@ class HistoricalSyncService
                 $batchUuid,
                 $trigger->id,
                 $modelIds,
+                $modelClass,
                 $applyConditions,
             )->delay(now()->addSeconds($delaySeconds));
         });
@@ -333,5 +335,14 @@ class HistoricalSyncService
     {
         $data['status'] = $status;
         Cache::put("webhook_bridge.sync.{$batchUuid}", $data, now()->addDays(7));
+
+        if ($status === 'completed') {
+            event(new HistoricalSyncCompleted(
+                $batchUuid,
+                $data['total'] ?? 0,
+                $data['successful'] ?? 0,
+                $data['failed'] ?? 0,
+            ));
+        }
     }
 }

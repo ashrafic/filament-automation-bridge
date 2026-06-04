@@ -97,9 +97,16 @@ class DeliveryService
         $queue = config('filament-webhook-bridge.queue.queue_name', 'webhooks');
         $connection = config('filament-webhook-bridge.queue.connection');
 
-        ProcessWebhookDelivery::dispatch($delivery)
-            ->onQueue($queue)
-            ->onConnection($connection);
+        ProcessWebhookDelivery::dispatch(
+            $delivery->id,
+            $delivery->payload,
+            $trigger->destination_url,
+            $trigger->secret,
+            $delivery->headers ?? [],
+            $trigger->webhook_timeout ?? 30,
+            $trigger->max_retries ?? config('filament-webhook-bridge.retry.default_max_attempts', 3),
+            $delivery->uuid,
+        )->onQueue($queue)->onConnection($connection);
 
         WebhookDispatched::dispatch($delivery);
 
@@ -121,6 +128,8 @@ class DeliveryService
             throw new \RuntimeException('Delivery cannot be retried.');
         }
 
+        $trigger = $delivery->trigger;
+
         $newDelivery = WebhookDelivery::create([
             'trigger_id' => $delivery->trigger_id,
             'model_type' => $delivery->model_type,
@@ -137,9 +146,16 @@ class DeliveryService
         $queue = config('filament-webhook-bridge.queue.queue_name', 'webhooks');
         $connection = config('filament-webhook-bridge.queue.connection');
 
-        ProcessWebhookDelivery::dispatch($newDelivery)
-            ->onQueue($queue)
-            ->onConnection($connection);
+        ProcessWebhookDelivery::dispatch(
+            $newDelivery->id,
+            $newDelivery->payload,
+            $trigger->destination_url,
+            $trigger->secret,
+            $newDelivery->headers ?? [],
+            $trigger->webhook_timeout ?? 30,
+            $newDelivery->max_retries,
+            $newDelivery->uuid,
+        )->onQueue($queue)->onConnection($connection);
 
         return $newDelivery;
     }
