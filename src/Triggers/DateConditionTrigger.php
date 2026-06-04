@@ -167,7 +167,5 @@ class DateConditionTrigger implements TriggerContract
         return null;
     }
 
-    public function unsubscribe(WebhookTrigger $trigger): void
-    {
-    }
+    public function unsubscribe(WebhookTrigger $trigger): void {}
 }

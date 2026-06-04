@@ -6,6 +6,7 @@ use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
 use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
 use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
 use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
+use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -105,7 +106,7 @@ class WebhookTrigger extends Model
             }
 
             if ($trigger->trigger_type !== null && $trigger->active && ! $trigger->isTriggerType('model-event')) {
-                app(\Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::class)->subscribe($trigger);
+                app(TriggerManager::class)->subscribe($trigger);
             }
         });
 
@@ -115,7 +116,7 @@ class WebhookTrigger extends Model
             }
 
             if ($trigger->trigger_type !== null && ! $trigger->isTriggerType('model-event')) {
-                app(\Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::class)->unsubscribe($trigger);
+                app(TriggerManager::class)->unsubscribe($trigger);
             }
         });
     }

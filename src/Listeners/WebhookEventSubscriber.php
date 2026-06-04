@@ -3,7 +3,6 @@
 namespace Ashrafic\FilamentWebhookBridge\Listeners;
 
 use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
 use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Illuminate\Database\Eloquent\Model;

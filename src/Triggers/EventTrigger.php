@@ -5,7 +5,6 @@ namespace Ashrafic\FilamentWebhookBridge\Triggers;
 use Ashrafic\FilamentWebhookBridge\Contracts\TriggerContract;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\ConditionEvaluator;
-use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Model;
 

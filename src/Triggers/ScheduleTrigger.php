@@ -7,6 +7,7 @@ use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\ModelDiscoveryService;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Illuminate\Database\Eloquent\Model;
 
 class ScheduleTrigger implements TriggerContract
@@ -59,7 +60,7 @@ class ScheduleTrigger implements TriggerContract
             TextInput::make('trigger_config.custom_cron')
                 ->label('Custom Cron Expression')
                 ->placeholder('* * * * *')
-                ->visible(fn (\Filament\Forms\Get $get) => $get('trigger_config.schedule_type') === 'custom'),
+                ->visible(fn (Get $get) => $get('trigger_config.schedule_type') === 'custom'),
         ];
     }
 
@@ -89,7 +90,5 @@ class ScheduleTrigger implements TriggerContract
         return null;
     }
 
-    public function unsubscribe(WebhookTrigger $trigger): void
-    {
-    }
+    public function unsubscribe(WebhookTrigger $trigger): void {}
 }

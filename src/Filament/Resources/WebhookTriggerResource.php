@@ -115,7 +115,7 @@ class WebhookTriggerResource extends Resource
                                 }
 
                                 if (! str_starts_with($fieldName, 'trigger_config.')) {
-                                    $field->statePath('trigger_config.' . $fieldName);
+                                    $field->statePath('trigger_config.'.$fieldName);
                                 }
 
                                 $schema[] = $field;

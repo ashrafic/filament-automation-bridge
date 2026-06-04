@@ -2,8 +2,6 @@
 
 namespace Ashrafic\FilamentWebhookBridge\Concerns;
 
-use Ashrafic\FilamentWebhookBridge\Services\ModelDiscoveryService;
-
 trait HasWebhookTriggers
 {
     public static function getWebhookDisplayName(): string

@@ -15,6 +15,7 @@ use Ashrafic\FilamentWebhookBridge\Formatters\N8nFormatter;
 use Ashrafic\FilamentWebhookBridge\Formatters\ZapierFormatter;
 use Ashrafic\FilamentWebhookBridge\Listeners\WebhookEventSubscriber;
 use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
+use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
 use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
 use Ashrafic\FilamentWebhookBridge\Triggers\DateConditionTrigger;
 use Ashrafic\FilamentWebhookBridge\Triggers\EventTrigger;
@@ -24,7 +25,9 @@ use Ashrafic\FilamentWebhookBridge\Triggers\ScheduleTrigger;
 use Ashrafic\FilamentWebhookBridge\Triggers\StatusChangedTrigger;
 use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spatie\WebhookServer\Events\WebhookCallFailedEvent;
@@ -102,7 +105,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
         }
 
         Event::listen('*', function (string $eventName, array $payload) {
-            if (! \Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::hasEventSubscriptions()) {
+            if (! TriggerManager::hasEventSubscriptions()) {
                 return;
             }
 
@@ -112,7 +115,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
                 $eventClass = get_class($eventName);
             }
 
-            $triggerIds = \Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::getTriggerIdsForEvent($eventClass);
+            $triggerIds = TriggerManager::getTriggerIdsForEvent($eventClass);
 
             if (empty($triggerIds)) {
                 return;
@@ -124,7 +127,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
                 return;
             }
 
-            $triggerManager = app(\Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager::class);
+            $triggerManager = app(TriggerManager::class);
             $deliveryService = app(DeliveryService::class);
 
             $properties = [];
@@ -139,7 +142,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
 
             $model = null;
             foreach ($properties as $value) {
-                if ($value instanceof \Illuminate\Database\Eloquent\Model) {
+                if ($value instanceof Model) {
                     $model = $value;
                     break;
                 }
@@ -147,7 +150,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
 
             foreach ($triggerIds as $triggerId) {
                 try {
-                    $trigger = \Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger::find($triggerId);
+                    $trigger = WebhookTrigger::find($triggerId);
 
                     if ($trigger === null || ! $trigger->active) {
                         continue;
@@ -173,7 +176,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
 
                     $deliveryService->dispatchForEventTrigger($trigger, $model, $properties);
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('EventTrigger: failed to process event', [
+                    Log::error('EventTrigger: failed to process event', [
                         'trigger_id' => $triggerId,
                         'event_class' => $eventClass,
                         'error' => $e->getMessage(),
