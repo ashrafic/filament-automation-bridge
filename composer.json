@@ -1,7 +1,7 @@
 {
     "name": "ashrafic/filament-webhook-bridge",
-    "description": "Filament plugin for bridging Eloquent model events to external webhooks with conditional logic, payload formatting, and delivery tracking",
-    "type": "library",
+    "description": "Turn any Eloquent model event into a webhook trigger for Zapier, Make, or n8n — without writing code.",
+    "type": "filament-plugin",
     "license": "MIT",
     "keywords": [
         "filament",
@@ -15,10 +15,13 @@
     "authors": [
         {
             "name": "Ashraf Islam",
-            "email": "ashraf@ashrafic.com",
-            "role": "Developer"
+            "email": "ashraf@ashrafic.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/ashrafic/filament-webhook-bridge/issues",
+        "source": "https://github.com/ashrafic/filament-webhook-bridge"
+    },
     "require": {
         "php": "^8.2",
         "filament/filament": "^5.0",
@@ -41,8 +44,6 @@
             "Ashrafic\\FilamentWebhookBridge\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true,
     "extra": {
         "laravel": {
             "providers": [
@@ -57,11 +58,5 @@
         "test": "vendor/bin/phpunit",
         "pint": "vendor/bin/pint",
         "pint-test": "vendor/bin/pint --test"
-    },
-    "config": {
-        "audit": {
-            "abandoned": "ignore",
-            "block-insecure": false
-        }
     }
 }
