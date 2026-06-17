@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('webhook_deliveries', function (Blueprint $table) {
+        Schema::create('automation_deliveries', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
-            $table->foreignId('trigger_id')->constrained('webhook_triggers')->cascadeOnDelete();
+            $table->foreignId('trigger_id')->constrained('automation_triggers')->cascadeOnDelete();
             $table->nullableMorphs('model');
             $table->json('payload');
             $table->json('headers')->nullable();
@@ -39,6 +39,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('webhook_deliveries');
+        Schema::dropIfExists('automation_deliveries');
     }
 };

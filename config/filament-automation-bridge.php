@@ -6,10 +6,10 @@ return [
     |--------------------------------------------------------------------------
     | Sandbox Mode
     |--------------------------------------------------------------------------
-    | When enabled, webhooks are captured and logged but never sent to
+    | When enabled, requests are captured and logged but never sent to
     | external destinations. Use in development/staging environments.
     */
-    'sandbox_mode' => env('WEBHOOK_BRIDGE_SANDBOX', false),
+    'sandbox_mode' => env('AUTOMATION_BRIDGE_SANDBOX', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -25,7 +25,7 @@ return [
             // Example: \App\Models\PersonalAccessToken::class,
         ],
 
-        'cache_key' => 'webhook_bridge.models',
+        'cache_key' => 'automation_bridge.models',
         'cache_ttl' => 3600,
     ],
 
@@ -50,7 +50,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'security' => [
-        'verify_ssl' => env('WEBHOOK_BRIDGE_VERIFY_SSL', true),
+        'verify_ssl' => env('AUTOMATION_BRIDGE_VERIFY_SSL', true),
         'max_payload_size_mb' => 5,
         'blocked_ip_ranges' => [
             '127.0.0.0/8',
@@ -63,7 +63,7 @@ return [
         'allowed_schemes' => ['https', 'http'],
         'require_https_in_production' => true,
         'signature_algorithm' => 'sha256',
-        'encryption_driver' => env('WEBHOOK_BRIDGE_ENCRYPTION_DRIVER', 'aes-256-cbc'),
+        'encryption_driver' => env('AUTOMATION_BRIDGE_ENCRYPTION_DRIVER', 'aes-256-cbc'),
     ],
 
     /*
@@ -72,7 +72,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'queue' => [
-        'connection' => env('WEBHOOK_BRIDGE_QUEUE_CONNECTION', config('queue.default')),
+        'connection' => env('AUTOMATION_BRIDGE_QUEUE_CONNECTION', config('queue.default')),
         'queue_name' => 'webhooks',
         'historical_sync_queue_name' => 'webhooks-sync',
     ],
@@ -139,7 +139,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'authorization' => [
-        'permission_prefix' => 'webhook_bridge',
+        'permission_prefix' => 'automation_bridge',
         'auto_register_gates' => true,
     ],
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Triggers;
+namespace Ashrafic\FilamentAutomationBridge\Triggers;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\TriggerContract;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Contracts\TriggerContract;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Filament\Forms\Components\Placeholder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,7 +21,7 @@ class ManualTrigger implements TriggerContract
 
     public static function description(): string
     {
-        return 'User-initiated webhook via a button in your Filament resource';
+        return 'User-initiated automation via a button in your Filament resource';
     }
 
     public static function icon(): string
@@ -57,10 +57,10 @@ class ManualTrigger implements TriggerContract
         return [];
     }
 
-    public function subscribe(WebhookTrigger $trigger): ?\Closure
+    public function subscribe(AutomationTrigger $trigger): ?\Closure
     {
         return null;
     }
 
-    public function unsubscribe(WebhookTrigger $trigger): void {}
+    public function unsubscribe(AutomationTrigger $trigger): void {}
 }

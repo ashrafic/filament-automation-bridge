@@ -1,11 +1,11 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Pages;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Pages;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -23,13 +23,13 @@ class DeliveryLogPage extends Page implements HasTable
 
     protected static ?int $navigationSort = 81;
 
-    protected static string $view = 'filament-webhook-bridge::pages.delivery-log';
+    protected static string $view = 'filament-automation-bridge::pages.delivery-log';
 
-    protected static ?string $slug = 'webhook-bridge/delivery-logs';
+    protected static ?string $slug = 'automation-bridge/delivery-logs';
 
     public static function getNavigationGroup(): ?string
     {
-        return config('filament-webhook-bridge.ui.navigation_group', 'Integrations');
+        return config('filament-automation-bridge.ui.navigation_group', 'Integrations');
     }
 
     public static function getModelLabel(): string
@@ -44,13 +44,13 @@ class DeliveryLogPage extends Page implements HasTable
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('webhook_bridge.view_deliveries') ?? false;
+        return auth()->user()?->can('automation_bridge.view_deliveries') ?? false;
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->query(WebhookDelivery::query()->with('trigger')->latest())
+            ->query(AutomationDelivery::query()->with('trigger')->latest())
             ->columns([
                 Tables\Columns\TextColumn::make('trigger.name')
                     ->label('Trigger')
@@ -103,7 +103,7 @@ class DeliveryLogPage extends Page implements HasTable
                     ->formatStateUsing(fn (DeliverySource $state) => $state->getLabel()),
                 Tables\Columns\TextColumn::make('retry_count')
                     ->label('Retries')
-                    ->formatStateUsing(fn (WebhookDelivery $record) => "{$record->retry_count}/{$record->max_retries}")
+                    ->formatStateUsing(fn (AutomationDelivery $record) => "{$record->retry_count}/{$record->max_retries}")
                     ->sortable(),
                 Tables\Columns\TextColumn::make('duration_ms')
                     ->label('Duration')
@@ -166,8 +166,8 @@ class DeliveryLogPage extends Page implements HasTable
                     ->requiresConfirmation()
                     ->modalHeading('Retry Delivery')
                     ->modalDescription('This will create a new delivery attempt.')
-                    ->visible(fn (WebhookDelivery $record) => $record->canRetry())
-                    ->action(function (WebhookDelivery $record) {
+                    ->visible(fn (AutomationDelivery $record) => $record->canRetry())
+                    ->action(function (AutomationDelivery $record) {
                         try {
                             app(DeliveryService::class)->retry($record);
 
@@ -186,8 +186,8 @@ class DeliveryLogPage extends Page implements HasTable
                 Tables\Actions\Action::make('view_details')
                     ->label('Details')
                     ->icon('heroicon-o-eye')
-                    ->modalHeading(fn (WebhookDelivery $record) => "Delivery #{$record->id}")
-                    ->modalContent(fn (WebhookDelivery $record) => view('filament-webhook-bridge::pages.delivery-details', ['record' => $record]))
+                    ->modalHeading(fn (AutomationDelivery $record) => "Delivery #{$record->id}")
+                    ->modalContent(fn (AutomationDelivery $record) => view('filament-automation-bridge::pages.delivery-details', ['record' => $record]))
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
                     ->slideOver(),
@@ -208,6 +208,6 @@ class DeliveryLogPage extends Page implements HasTable
                     }),
                 Tables\Actions\DeleteBulkAction::make(),
             ])
-            ->poll(config('filament-webhook-bridge.ui.polling_interval', '5s'));
+            ->poll(config('filament-automation-bridge.ui.polling_interval', '5s'));
     }
 }

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('webhook_templates', function (Blueprint $table) {
+        Schema::create('automation_templates', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
             $table->text('description')->nullable();
@@ -29,6 +29,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('webhook_templates');
+        Schema::dropIfExists('automation_templates');
     }
 };

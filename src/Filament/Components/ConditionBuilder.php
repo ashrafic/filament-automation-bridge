@@ -1,10 +1,10 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Components;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Components;
 
-use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
+use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Closure;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;

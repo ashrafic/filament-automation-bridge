@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Widgets;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Widgets;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Filament\Notifications\Notification;
 use Filament\Widgets\Widget;
 
-class WebhookHealthWidget extends Widget
+class AutomationHealthWidget extends Widget
 {
-    protected static string $view = 'filament-webhook-bridge::widgets.webhook-health';
+    protected static string $view = 'filament-automation-bridge::widgets.automation-health';
 
     protected static ?int $sort = 80;
 
@@ -19,11 +19,11 @@ class WebhookHealthWidget extends Widget
 
     public function getViewData(): array
     {
-        $activeTriggers = WebhookTrigger::where('active', true)->count();
+        $activeTriggers = AutomationTrigger::where('active', true)->count();
 
-        $deliveries24h = WebhookDelivery::where('created_at', '>=', now()->subDay())->count();
+        $deliveries24h = AutomationDelivery::where('created_at', '>=', now()->subDay())->count();
 
-        $successful24h = WebhookDelivery::where('created_at', '>=', now()->subDay())
+        $successful24h = AutomationDelivery::where('created_at', '>=', now()->subDay())
             ->where('status', DeliveryStatus::Success)
             ->count();
 
@@ -31,12 +31,12 @@ class WebhookHealthWidget extends Widget
             ? round(($successful24h / $deliveries24h) * 100, 1)
             : null;
 
-        $failedNeedsAttention = WebhookDelivery::where('status', DeliveryStatus::Failed)
+        $failedNeedsAttention = AutomationDelivery::where('status', DeliveryStatus::Failed)
             ->where('created_at', '>=', now()->subDay())
             ->whereColumn('retry_count', '>=', 'max_retries')
             ->count();
 
-        $recentFailures = WebhookDelivery::with('trigger')
+        $recentFailures = AutomationDelivery::with('trigger')
             ->where('status', DeliveryStatus::Failed)
             ->latest()
             ->limit(5)
@@ -53,7 +53,7 @@ class WebhookHealthWidget extends Widget
 
     public function retryDelivery(int $deliveryId): void
     {
-        $delivery = WebhookDelivery::find($deliveryId);
+        $delivery = AutomationDelivery::find($deliveryId);
 
         if (! $delivery || ! $delivery->canRetry()) {
             Notification::make()

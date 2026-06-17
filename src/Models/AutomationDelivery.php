@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Models;
+namespace Ashrafic\FilamentAutomationBridge\Models;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Str;
 
-class WebhookDelivery extends Model
+class AutomationDelivery extends Model
 {
-    protected $table = 'webhook_deliveries';
+    protected $table = 'automation_deliveries';
 
     protected $fillable = [
         'uuid',
@@ -58,7 +58,7 @@ class WebhookDelivery extends Model
 
     public function trigger(): BelongsTo
     {
-        return $this->belongsTo(WebhookTrigger::class, 'trigger_id');
+        return $this->belongsTo(AutomationTrigger::class, 'trigger_id');
     }
 
     public function model(): MorphTo

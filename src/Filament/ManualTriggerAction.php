@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament;
+namespace Ashrafic\FilamentAutomationBridge\Filament;
 
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
@@ -16,11 +16,11 @@ class ManualTriggerAction extends Action
 
         $this
             ->icon('heroicon-o-paper-airplane')
-            ->label('Send Webhook')
+            ->label('Send Automation')
             ->color('success')
             ->form(fn () => [
                 Select::make('trigger_id')
-                    ->label('Select Webhook Trigger')
+                    ->label('Select Automation Trigger')
                     ->options(function () {
                         $record = $this->getRecord();
                         if (! $record) {
@@ -29,7 +29,7 @@ class ManualTriggerAction extends Action
 
                         $modelClass = get_class($record);
 
-                        return WebhookTrigger::active()
+                        return AutomationTrigger::active()
                             ->where('trigger_type', 'manual')
                             ->where('model_class', $modelClass)
                             ->pluck('name', 'id');
@@ -37,7 +37,7 @@ class ManualTriggerAction extends Action
                     ->required(),
             ])
             ->action(function (array $data): void {
-                $trigger = WebhookTrigger::find($data['trigger_id']);
+                $trigger = AutomationTrigger::find($data['trigger_id']);
                 $record = $this->getRecord();
 
                 if (! $trigger || ! $record) {
@@ -48,7 +48,7 @@ class ManualTriggerAction extends Action
                 $delivery = $deliveryService->dispatchForManualTrigger($trigger, $record);
 
                 Notification::make()
-                    ->title($delivery ? 'Webhook sent successfully' : 'Webhook queued for delivery')
+                    ->title($delivery ? 'Automation sent successfully' : 'Automation queued for delivery')
                     ->success()
                     ->send();
             })
@@ -58,7 +58,7 @@ class ManualTriggerAction extends Action
                     return false;
                 }
 
-                return WebhookTrigger::active()
+                return AutomationTrigger::active()
                     ->where('trigger_type', 'manual')
                     ->where('model_class', get_class($record))
                     ->exists();

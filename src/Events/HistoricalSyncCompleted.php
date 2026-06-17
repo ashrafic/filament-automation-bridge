@@ -1,6 +1,6 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Events;
+namespace Ashrafic\FilamentAutomationBridge\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

@@ -1,11 +1,11 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Conditions;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Conditions;
 
-use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\ContainsOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\EqualsOperator;
-use Ashrafic\FilamentWebhookBridge\Contracts\ConditionOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\ContainsOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\EqualsOperator;
+use Ashrafic\FilamentAutomationBridge\Contracts\ConditionOperator;
 use PHPUnit\Framework\TestCase;
 
 class ConditionRegistryTest extends TestCase

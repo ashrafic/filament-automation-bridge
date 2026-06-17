@@ -1,10 +1,10 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Triggers;
+namespace Ashrafic\FilamentAutomationBridge\Triggers;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\TriggerContract;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\ConditionEvaluator;
+use Ashrafic\FilamentAutomationBridge\Contracts\TriggerContract;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\ConditionEvaluator;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Model;
 
@@ -86,7 +86,7 @@ class EventTrigger implements TriggerContract
         ];
     }
 
-    public function subscribe(WebhookTrigger $trigger): ?\Closure
+    public function subscribe(AutomationTrigger $trigger): ?\Closure
     {
         $config = $trigger->trigger_config ?? [];
         $eventClass = $config['event_class'] ?? '';
@@ -102,7 +102,7 @@ class EventTrigger implements TriggerContract
         };
     }
 
-    public function unsubscribe(WebhookTrigger $trigger): void
+    public function unsubscribe(AutomationTrigger $trigger): void
     {
         $config = $trigger->trigger_config ?? [];
         $eventClass = $config['event_class'] ?? '';

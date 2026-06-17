@@ -1,16 +1,16 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Feature;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Feature;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
 
 class TestConnectionTest extends FilamentTestCase
 {
@@ -20,9 +20,9 @@ class TestConnectionTest extends FilamentTestCase
 
     protected $testServerTmpFile;
 
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Test Connection Trigger',
             'model_class' => TestUser::class,
             'event' => EventEnum::Created,
@@ -50,7 +50,7 @@ if ($method === 'POST') {
 }
 PHP;
 
-        $this->testServerTmpFile = sys_get_temp_dir().'/webhook_test_'.uniqid().'.php';
+        $this->testServerTmpFile = sys_get_temp_dir().'/automation_test_'.uniqid().'.php';
         file_put_contents($this->testServerTmpFile, $script);
 
         $this->testServerProcess = proc_open(
@@ -153,12 +153,12 @@ PHP;
         $deliveryService = $this->app->make(DeliveryService::class);
         $deliveryService->testConnection($trigger);
 
-        $this->assertDatabaseHas('webhook_deliveries', [
+        $this->assertDatabaseHas('automation_deliveries', [
             'trigger_id' => $trigger->id,
             'source' => DeliverySource::Test->value,
         ]);
 
-        $delivery = WebhookDelivery::where('trigger_id', $trigger->id)
+        $delivery = AutomationDelivery::where('trigger_id', $trigger->id)
             ->where('source', DeliverySource::Test->value)
             ->first();
 
@@ -176,7 +176,7 @@ PHP;
         $deliveryService = $this->app->make(DeliveryService::class);
         $deliveryService->testConnection($trigger);
 
-        $delivery = WebhookDelivery::where('trigger_id', $trigger->id)
+        $delivery = AutomationDelivery::where('trigger_id', $trigger->id)
             ->where('source', DeliverySource::Test->value)
             ->first();
 
@@ -194,7 +194,7 @@ PHP;
         $deliveryService = $this->app->make(DeliveryService::class);
         $deliveryService->testConnection($trigger);
 
-        $delivery = WebhookDelivery::where('trigger_id', $trigger->id)
+        $delivery = AutomationDelivery::where('trigger_id', $trigger->id)
             ->where('source', DeliverySource::Test->value)
             ->first();
 

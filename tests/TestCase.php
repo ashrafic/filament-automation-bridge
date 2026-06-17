@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests;
+namespace Ashrafic\FilamentAutomationBridge\Tests;
 
-use Ashrafic\FilamentWebhookBridge\FilamentWebhookBridgeServiceProvider;
+use Ashrafic\FilamentAutomationBridge\FilamentAutomationBridgeServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -14,7 +14,7 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageProviders($app): array
     {
         return [
-            FilamentWebhookBridgeServiceProvider::class,
+            FilamentAutomationBridgeServiceProvider::class,
         ];
     }
 

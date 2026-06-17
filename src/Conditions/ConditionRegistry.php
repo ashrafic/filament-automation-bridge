@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Conditions;
+namespace Ashrafic\FilamentAutomationBridge\Conditions;
 
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\ChangedOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\ChangedToOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\ContainsOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\EqualsOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\GreaterThanOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\IsEmptyOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\IsNotEmptyOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\LessThanOperator;
-use Ashrafic\FilamentWebhookBridge\Conditions\Operators\NotEqualsOperator;
-use Ashrafic\FilamentWebhookBridge\Contracts\ConditionOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\ChangedOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\ChangedToOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\ContainsOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\EqualsOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\GreaterThanOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\IsEmptyOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\IsNotEmptyOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\LessThanOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\Operators\NotEqualsOperator;
+use Ashrafic\FilamentAutomationBridge\Contracts\ConditionOperator;
 
 class ConditionRegistry
 {

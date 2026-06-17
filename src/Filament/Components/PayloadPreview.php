@@ -1,12 +1,12 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Components;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Components;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\PayloadBuilder;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\PayloadBuilder;
 use Closure;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\View;
@@ -61,7 +61,7 @@ class PayloadPreview extends Component
         parent::setUp();
 
         $this->schema([
-            View::make('filament-webhook-bridge::components.payload-preview')
+            View::make('filament-automation-bridge::components.payload-preview')
                 ->viewData(function (Get $get, PayloadPreview $component) {
                     $modelClass = $component->getModelClass();
                     $eventType = $component->getEvent();
@@ -71,7 +71,7 @@ class PayloadPreview extends Component
                         return ['json' => '// Select a model to see a payload preview', 'destination' => null];
                     }
 
-                    $trigger = new WebhookTrigger;
+                    $trigger = new AutomationTrigger;
                     $trigger->model_class = $modelClass;
                     $trigger->event = $eventType ? EventEnum::tryFrom($eventType) ?? EventEnum::Created : EventEnum::Created;
                     $trigger->destination_type = $destinationType ? DestinationType::tryFrom($destinationType) ?? DestinationType::Custom : DestinationType::Custom;

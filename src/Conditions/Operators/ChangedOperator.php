@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Conditions\Operators;
+namespace Ashrafic\FilamentAutomationBridge\Conditions\Operators;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\ConditionOperator;
+use Ashrafic\FilamentAutomationBridge\Contracts\ConditionOperator;
 
 class ChangedOperator implements ConditionOperator
 {

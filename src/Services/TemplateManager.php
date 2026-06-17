@@ -1,25 +1,25 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTemplate;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTemplate;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Illuminate\Support\Collection;
 
 class TemplateManager
 {
     public function getAll(): Collection
     {
-        return WebhookTemplate::orderByDesc('is_builtin')
+        return AutomationTemplate::orderByDesc('is_builtin')
             ->orderBy('name')
             ->get();
     }
 
     public function getBuiltins(): Collection
     {
-        return WebhookTemplate::where('is_builtin', true)
+        return AutomationTemplate::where('is_builtin', true)
             ->orderBy('name')
             ->get();
     }
@@ -92,16 +92,16 @@ class TemplateManager
         ];
 
         foreach ($builtins as $template) {
-            WebhookTemplate::firstOrCreate(
+            AutomationTemplate::firstOrCreate(
                 ['name' => $template['name'], 'is_builtin' => true],
                 $template,
             );
         }
     }
 
-    public function saveFromTrigger(WebhookTrigger $trigger, string $name, ?string $description = null): WebhookTemplate
+    public function saveFromTrigger(AutomationTrigger $trigger, string $name, ?string $description = null): AutomationTemplate
     {
-        return WebhookTemplate::create([
+        return AutomationTemplate::create([
             'name' => $name,
             'description' => $description,
             'is_builtin' => false,
@@ -115,7 +115,7 @@ class TemplateManager
         ]);
     }
 
-    public function applyTemplate(WebhookTemplate $template): array
+    public function applyTemplate(AutomationTemplate $template): array
     {
         return [
             'name' => $template->name,

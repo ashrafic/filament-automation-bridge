@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Exceptions\SecurityException;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\SecurityService;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Exceptions\SecurityException;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\SecurityService;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
 class SecurityServiceTest extends TestCase
 {
@@ -30,9 +30,9 @@ class SecurityServiceTest extends TestCase
 
         $headers = $this->service->sign($payload, $secret);
 
-        $this->assertArrayHasKey('X-Webhook-Signature', $headers);
-        $this->assertArrayHasKey('X-Webhook-Timestamp', $headers);
-        $this->assertStringStartsWith('sha256=', $headers['X-Webhook-Signature']);
+        $this->assertArrayHasKey('X-Automation-Signature', $headers);
+        $this->assertArrayHasKey('X-Automation-Timestamp', $headers);
+        $this->assertStringStartsWith('sha256=', $headers['X-Automation-Signature']);
     }
 
     public function test_sign_returns_empty_array_when_secret_is_null(): void
@@ -50,10 +50,10 @@ class SecurityServiceTest extends TestCase
         $secret = 'deterministic-secret';
 
         $headers1 = $this->service->sign($payload, $secret);
-        $timestamp = $headers1['X-Webhook-Timestamp'];
+        $timestamp = $headers1['X-Automation-Timestamp'];
 
         $expectedSig = 'sha256='.hash_hmac('sha256', $timestamp.'.'.json_encode($payload), $secret);
-        $this->assertSame($expectedSig, $headers1['X-Webhook-Signature']);
+        $this->assertSame($expectedSig, $headers1['X-Automation-Signature']);
     }
 
     public function test_validate_url_accepts_valid_https_url(): void
@@ -128,7 +128,7 @@ class SecurityServiceTest extends TestCase
 
     public function test_build_headers_includes_signatures(): void
     {
-        $trigger = WebhookTrigger::create([
+        $trigger = AutomationTrigger::create([
             'name' => 'Test',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
@@ -139,10 +139,10 @@ class SecurityServiceTest extends TestCase
             'secret' => 'my-secret',
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ]);
 
-        $delivery = WebhookDelivery::create([
+        $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => 'App\\Models\\User',
             'model_id' => 1,
@@ -156,10 +156,10 @@ class SecurityServiceTest extends TestCase
         $headers = $this->service->buildHeaders($trigger, $delivery);
 
         $this->assertArrayHasKey('Content-Type', $headers);
-        $this->assertArrayHasKey('X-Webhook-Signature', $headers);
-        $this->assertArrayHasKey('X-Webhook-Timestamp', $headers);
-        $this->assertArrayHasKey('X-Webhook-Trigger-Id', $headers);
-        $this->assertArrayHasKey('X-Webhook-Delivery-Id', $headers);
+        $this->assertArrayHasKey('X-Automation-Signature', $headers);
+        $this->assertArrayHasKey('X-Automation-Timestamp', $headers);
+        $this->assertArrayHasKey('X-Automation-Trigger-Id', $headers);
+        $this->assertArrayHasKey('X-Automation-Delivery-Id', $headers);
         $this->assertSame('application/json', $headers['Content-Type']);
     }
 }

@@ -1,22 +1,22 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Commands;
+namespace Ashrafic\FilamentAutomationBridge\Commands;
 
-use Ashrafic\FilamentWebhookBridge\Services\TemplateManager;
+use Ashrafic\FilamentAutomationBridge\Services\TemplateManager;
 use Illuminate\Console\Command;
 
 class InstallCommand extends Command
 {
-    protected $signature = 'webhook-bridge:install';
+    protected $signature = 'automation-bridge:install';
 
-    protected $description = 'Install the Filament Webhook Bridge plugin';
+    protected $description = 'Install the Filament Automation Bridge plugin';
 
     public function handle(): int
     {
-        $this->info('Installing Filament Webhook Bridge...');
+        $this->info('Installing Filament Automation Bridge...');
 
         $this->call('vendor:publish', [
-            '--tag' => 'filament-webhook-bridge-config',
+            '--tag' => 'filament-automation-bridge-config',
         ]);
 
         $this->call('migrate');
@@ -31,12 +31,12 @@ class InstallCommand extends Command
         }
 
         $this->newLine();
-        $this->info('Filament Webhook Bridge installed successfully!');
+        $this->info('Filament Automation Bridge installed successfully!');
         $this->newLine();
         $this->line('<fg=yellow>Next steps:</>');
         $this->line('  1. Add the plugin to your PanelProvider:');
-        $this->line('     ->plugin(\\Ashrafic\\FilamentWebhookBridge\\FilamentWebhookBridgePlugin::make())');
-        $this->line('  2. Start a queue worker for webhook delivery:');
+        $this->line('     ->plugin(\\Ashrafic\\FilamentAutomationBridge\\FilamentAutomationBridgePlugin::make())');
+        $this->line('  2. Start a queue worker for automation delivery:');
         $this->line('     php artisan queue:work --queue=webhooks');
 
         return self::SUCCESS;

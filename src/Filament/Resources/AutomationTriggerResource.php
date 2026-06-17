@@ -1,19 +1,19 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Resources;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Resources;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Filament\Resources\Pages\CreateWebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Filament\Resources\Pages\EditWebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Filament\Resources\Pages\ListWebhookTriggers;
-use Ashrafic\FilamentWebhookBridge\Filament\Resources\Pages\ViewWebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
-use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
-use Ashrafic\FilamentWebhookBridge\Services\ModelDiscoveryService;
-use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\CreateAutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\EditAutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\ListAutomationTriggers;
+use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\ViewAutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
+use Ashrafic\FilamentAutomationBridge\Services\ModelDiscoveryService;
+use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -23,35 +23,35 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
-class WebhookTriggerResource extends Resource
+class AutomationTriggerResource extends Resource
 {
-    protected static ?string $model = WebhookTrigger::class;
+    protected static ?string $model = AutomationTrigger::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
     public static function getNavigationGroup(): ?string
     {
-        return config('filament-webhook-bridge.ui.navigation_group', 'Integrations');
+        return config('filament-automation-bridge.ui.navigation_group', 'Integrations');
     }
 
     public static function getNavigationSort(): ?int
     {
-        return config('filament-webhook-bridge.ui.navigation_sort', 80);
+        return config('filament-automation-bridge.ui.navigation_sort', 80);
     }
 
     public static function getModelLabel(): string
     {
-        return 'Webhook Trigger';
+        return 'Automation Trigger';
     }
 
     public static function getPluralModelLabel(): string
     {
-        return 'Webhook Triggers';
+        return 'Automation Triggers';
     }
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('webhook_bridge.view_triggers') ?? false;
+        return auth()->user()?->can('automation_bridge.view_triggers') ?? false;
     }
 
     public static function form(Form $form): Form
@@ -238,7 +238,7 @@ class WebhookTriggerResource extends Resource
                             ->maxLength(255)
                             ->dehydrated(fn ($state) => filled($state))
                             ->placeholder('Leave blank to auto-generate'),
-                        Forms\Components\TextInput::make('webhook_timeout')
+                        Forms\Components\TextInput::make('request_timeout')
                             ->label('Timeout (seconds)')
                             ->numeric()
                             ->minValue(1)
@@ -294,10 +294,10 @@ class WebhookTriggerResource extends Resource
                     ->label('Last Delivered')
                     ->dateTime()
                     ->placeholder('Never')
-                    ->getStateUsing(fn (WebhookTrigger $record) => $record->deliveries()->latest('created_at')->value('created_at')),
+                    ->getStateUsing(fn (AutomationTrigger $record) => $record->deliveries()->latest('created_at')->value('created_at')),
                 Tables\Columns\TextColumn::make('success_rate')
                     ->label('Success Rate')
-                    ->getStateUsing(function (WebhookTrigger $record) {
+                    ->getStateUsing(function (AutomationTrigger $record) {
                         $stats = $record->successRateLast7Days();
 
                         if ($stats['total'] === 0) {
@@ -306,7 +306,7 @@ class WebhookTriggerResource extends Resource
 
                         return round(($stats['success'] / $stats['total']) * 100, 1).'%';
                     })
-                    ->color(function (WebhookTrigger $record) {
+                    ->color(function (AutomationTrigger $record) {
                         $stats = $record->successRateLast7Days();
 
                         if ($stats['total'] === 0) {
@@ -355,10 +355,10 @@ class WebhookTriggerResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('toggle_active')
-                    ->label(fn (WebhookTrigger $record) => $record->active ? 'Deactivate' : 'Activate')
-                    ->icon(fn (WebhookTrigger $record) => $record->active ? 'heroicon-o-pause' : 'heroicon-o-play')
+                    ->label(fn (AutomationTrigger $record) => $record->active ? 'Deactivate' : 'Activate')
+                    ->icon(fn (AutomationTrigger $record) => $record->active ? 'heroicon-o-pause' : 'heroicon-o-play')
                     ->requiresConfirmation()
-                    ->action(function (WebhookTrigger $record) {
+                    ->action(function (AutomationTrigger $record) {
                         $record->update(['active' => ! $record->active]);
 
                         Notification::make()
@@ -369,11 +369,11 @@ class WebhookTriggerResource extends Resource
                 Tables\Actions\Action::make('duplicate')
                     ->icon('heroicon-o-document-duplicate')
                     ->requiresConfirmation()
-                    ->action(function (WebhookTrigger $record) {
+                    ->action(function (AutomationTrigger $record) {
                         $replica = $record->replicate();
                         $replica->name = $record->name.' (Copy)';
                         $replica->active = false;
-                        $replica->secret = WebhookTrigger::generateSecret();
+                        $replica->secret = AutomationTrigger::generateSecret();
                         $replica->save();
 
                         Notification::make()
@@ -387,7 +387,7 @@ class WebhookTriggerResource extends Resource
                     ->url('#')
                     ->visible(false),
                 Tables\Actions\DeleteAction::make()
-                    ->before(function (WebhookTrigger $record) {
+                    ->before(function (AutomationTrigger $record) {
                         app(DeliveryService::class)->cancelPendingDeliveries($record);
                     }),
             ])
@@ -416,7 +416,7 @@ class WebhookTriggerResource extends Resource
                             ->send();
                     }),
             ])
-            ->poll(config('filament-webhook-bridge.ui.polling_interval', '5s'));
+            ->poll(config('filament-automation-bridge.ui.polling_interval', '5s'));
     }
 
     public static function getRelations(): array
@@ -428,10 +428,10 @@ class WebhookTriggerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListWebhookTriggers::route('/'),
-            'create' => CreateWebhookTrigger::route('/create'),
-            'edit' => EditWebhookTrigger::route('/{record}/edit'),
-            'view' => ViewWebhookTrigger::route('/{record}'),
+            'index' => ListAutomationTriggers::route('/'),
+            'create' => CreateAutomationTrigger::route('/create'),
+            'edit' => EditAutomationTrigger::route('/{record}/edit'),
+            'view' => ViewAutomationTrigger::route('/{record}'),
         ];
     }
 }

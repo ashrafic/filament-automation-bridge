@@ -1,19 +1,19 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Models;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Models;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTemplate;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTemplate;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
-class WebhookTemplateTest extends TestCase
+class AutomationTemplateTest extends TestCase
 {
-    protected function createTemplate(array $overrides = []): WebhookTemplate
+    protected function createTemplate(array $overrides = []): AutomationTemplate
     {
-        return WebhookTemplate::create(array_merge([
+        return AutomationTemplate::create(array_merge([
             'name' => 'User Created Template',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
@@ -29,7 +29,7 @@ class WebhookTemplateTest extends TestCase
 
         $trigger = $template->toTrigger();
 
-        $this->assertInstanceOf(WebhookTrigger::class, $trigger);
+        $this->assertInstanceOf(AutomationTrigger::class, $trigger);
         $this->assertSame('User Created Template', $trigger->name);
         $this->assertSame('App\\Models\\User', $trigger->model_class);
         $this->assertSame(EventEnum::Created, $trigger->event);

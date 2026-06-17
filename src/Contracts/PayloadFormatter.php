@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Contracts;
+namespace Ashrafic\FilamentAutomationBridge\Contracts;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
 
 interface PayloadFormatter
 {

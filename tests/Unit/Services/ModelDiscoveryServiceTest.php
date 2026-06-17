@@ -1,11 +1,11 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Services\ModelDiscoveryService;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Services\ModelDiscoveryService;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestOrder;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
@@ -87,7 +87,7 @@ class ModelDiscoveryServiceTest extends TestCase
 
     public function test_returns_empty_array_when_no_models_found(): void
     {
-        config(['filament-webhook-bridge.models.paths' => ['/nonexistent/directory/that/does/not/exist']]);
+        config(['filament-automation-bridge.models.paths' => ['/nonexistent/directory/that/does/not/exist']]);
 
         Cache::flush();
         $freshService = new ModelDiscoveryService;

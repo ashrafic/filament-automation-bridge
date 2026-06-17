@@ -1,16 +1,16 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Resources\Pages;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages;
 
-use Ashrafic\FilamentWebhookBridge\Filament\Resources\WebhookTriggerResource;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Filament\Resources\AutomationTriggerResource;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
-class EditWebhookTrigger extends EditRecord
+class EditAutomationTrigger extends EditRecord
 {
-    protected static string $resource = WebhookTriggerResource::class;
+    protected static string $resource = AutomationTriggerResource::class;
 
     protected function getHeaderActions(): array
     {

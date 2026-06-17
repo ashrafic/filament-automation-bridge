@@ -1,6 +1,6 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;

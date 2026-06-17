@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Formatters;
+namespace Ashrafic\FilamentAutomationBridge\Formatters;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\PayloadFormatter;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Contracts\PayloadFormatter;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
 
 class MakeFormatter implements PayloadFormatter
 {
@@ -17,7 +17,7 @@ class MakeFormatter implements PayloadFormatter
         $payload['__metadata'] = [
             'event' => $metadata['event'],
             'triggered_at' => $metadata['triggered_at'],
-            'webhook_id' => $metadata['webhook_id'],
+            'automation_id' => $metadata['automation_id'],
         ];
 
         return $payload;

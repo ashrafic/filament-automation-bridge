@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Formatters;
+namespace Ashrafic\FilamentAutomationBridge\Formatters;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\PayloadFormatter;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Contracts\PayloadFormatter;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
 
 class ZapierFormatter implements PayloadFormatter
 {
@@ -28,7 +28,7 @@ class ZapierFormatter implements PayloadFormatter
 
         $flat['event'] = $metadata['event'];
         $flat['triggered_at'] = $metadata['triggered_at'];
-        $flat['webhook_id'] = $metadata['webhook_id'];
+        $flat['automation_id'] = $metadata['automation_id'];
 
         return $flat;
     }

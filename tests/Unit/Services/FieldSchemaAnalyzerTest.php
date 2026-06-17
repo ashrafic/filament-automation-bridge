@@ -1,11 +1,11 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestOrder;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 use Illuminate\Support\Facades\Cache;
 
 class FieldSchemaAnalyzerTest extends TestCase

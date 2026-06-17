@@ -1,13 +1,13 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Listeners;
+namespace Ashrafic\FilamentAutomationBridge\Listeners;
 
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
-use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
 use Illuminate\Database\Eloquent\Model;
 
-class WebhookEventSubscriber
+class AutomationEventSubscriber
 {
     public function __construct(
         protected DeliveryService $deliveryService,

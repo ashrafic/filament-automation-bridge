@@ -1,29 +1,29 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge;
+namespace Ashrafic\FilamentAutomationBridge;
 
-use Ashrafic\FilamentWebhookBridge\Commands\InstallCommand;
-use Ashrafic\FilamentWebhookBridge\Commands\ModelCacheCommand;
-use Ashrafic\FilamentWebhookBridge\Commands\ProcessScheduledTriggersCommand;
-use Ashrafic\FilamentWebhookBridge\Commands\PruneDeliveryLogsCommand;
-use Ashrafic\FilamentWebhookBridge\Commands\SyncHistoricalRecordsCommand;
-use Ashrafic\FilamentWebhookBridge\Commands\TestConnectionCommand;
-use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
-use Ashrafic\FilamentWebhookBridge\Formatters\CustomFormatter;
-use Ashrafic\FilamentWebhookBridge\Formatters\MakeFormatter;
-use Ashrafic\FilamentWebhookBridge\Formatters\N8nFormatter;
-use Ashrafic\FilamentWebhookBridge\Formatters\ZapierFormatter;
-use Ashrafic\FilamentWebhookBridge\Listeners\WebhookEventSubscriber;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
-use Ashrafic\FilamentWebhookBridge\Triggers\DateConditionTrigger;
-use Ashrafic\FilamentWebhookBridge\Triggers\EventTrigger;
-use Ashrafic\FilamentWebhookBridge\Triggers\ManualTrigger;
-use Ashrafic\FilamentWebhookBridge\Triggers\ModelEventTrigger;
-use Ashrafic\FilamentWebhookBridge\Triggers\ScheduleTrigger;
-use Ashrafic\FilamentWebhookBridge\Triggers\StatusChangedTrigger;
-use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
+use Ashrafic\FilamentAutomationBridge\Commands\InstallCommand;
+use Ashrafic\FilamentAutomationBridge\Commands\ModelCacheCommand;
+use Ashrafic\FilamentAutomationBridge\Commands\ProcessScheduledTriggersCommand;
+use Ashrafic\FilamentAutomationBridge\Commands\PruneDeliveryLogsCommand;
+use Ashrafic\FilamentAutomationBridge\Commands\SyncHistoricalRecordsCommand;
+use Ashrafic\FilamentAutomationBridge\Commands\TestConnectionCommand;
+use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
+use Ashrafic\FilamentAutomationBridge\Formatters\CustomFormatter;
+use Ashrafic\FilamentAutomationBridge\Formatters\MakeFormatter;
+use Ashrafic\FilamentAutomationBridge\Formatters\N8nFormatter;
+use Ashrafic\FilamentAutomationBridge\Formatters\ZapierFormatter;
+use Ashrafic\FilamentAutomationBridge\Listeners\AutomationEventSubscriber;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Triggers\DateConditionTrigger;
+use Ashrafic\FilamentAutomationBridge\Triggers\EventTrigger;
+use Ashrafic\FilamentAutomationBridge\Triggers\ManualTrigger;
+use Ashrafic\FilamentAutomationBridge\Triggers\ModelEventTrigger;
+use Ashrafic\FilamentAutomationBridge\Triggers\ScheduleTrigger;
+use Ashrafic\FilamentAutomationBridge\Triggers\StatusChangedTrigger;
+use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
@@ -33,18 +33,18 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Spatie\WebhookServer\Events\WebhookCallFailedEvent;
 use Spatie\WebhookServer\Events\WebhookCallSucceededEvent;
 
-class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
+class FilamentAutomationBridgeServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('filament-webhook-bridge')
+            ->name('filament-automation-bridge')
             ->hasConfigFile()
             ->hasMigrations([
-                'create_webhook_triggers_table',
-                'create_webhook_deliveries_table',
-                'create_webhook_templates_table',
-                'add_trigger_type_to_webhook_triggers_table',
+                'create_automation_triggers_table',
+                'create_automation_deliveries_table',
+                'create_automation_templates_table',
+                'add_trigger_type_to_automation_triggers_table',
             ])
             ->hasCommands([
                 InstallCommand::class,
@@ -76,31 +76,31 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
             return $manager;
         });
 
-        $this->app->singleton('webhook-bridge', DeliveryService::class);
+        $this->app->singleton('automation-bridge', DeliveryService::class);
 
         $this->app->tag([
             ZapierFormatter::class,
             MakeFormatter::class,
             N8nFormatter::class,
             CustomFormatter::class,
-        ], 'webhook-bridge.formatters');
+        ], 'automation-bridge.formatters');
     }
 
     public function packageBooted(): void
     {
         parent::packageBooted();
 
-        if (config('filament-webhook-bridge.models.paths')) {
-            Event::listen('eloquent.*', [WebhookEventSubscriber::class, 'handle']);
+        if (config('filament-automation-bridge.models.paths')) {
+            Event::listen('eloquent.*', [AutomationEventSubscriber::class, 'handle']);
         }
 
         $this->app->make(Schedule::class)
-            ->command('webhook-bridge:process-scheduled')
+            ->command('automation-bridge:process-scheduled')
             ->everyMinute();
 
-        if (config('filament-webhook-bridge.retention.prune_enabled', true)) {
+        if (config('filament-automation-bridge.retention.prune_enabled', true)) {
             $this->app->make(Schedule::class)
-                ->command('webhook-bridge:prune-logs')
+                ->command('automation-bridge:prune-logs')
                 ->daily();
         }
 
@@ -150,7 +150,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
 
             foreach ($triggerIds as $triggerId) {
                 try {
-                    $trigger = WebhookTrigger::find($triggerId);
+                    $trigger = AutomationTrigger::find($triggerId);
 
                     if ($trigger === null || ! $trigger->active) {
                         continue;
@@ -187,7 +187,7 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
 
         if (class_exists(WebhookCallSucceededEvent::class)) {
             Event::listen(WebhookCallSucceededEvent::class, function (WebhookCallSucceededEvent $event) {
-                $delivery = WebhookDelivery::where('uuid', $event->uuid ?? '')->first();
+                $delivery = AutomationDelivery::where('uuid', $event->uuid ?? '')->first();
 
                 if ($delivery) {
                     app(DeliveryService::class)->handleSpatieSuccess($delivery, $event->response);
@@ -195,10 +195,10 @@ class FilamentWebhookBridgeServiceProvider extends PackageServiceProvider
             });
 
             Event::listen(WebhookCallFailedEvent::class, function (WebhookCallFailedEvent $event) {
-                $delivery = WebhookDelivery::where('uuid', $event->uuid ?? '')->first();
+                $delivery = AutomationDelivery::where('uuid', $event->uuid ?? '')->first();
 
                 if ($delivery) {
-                    app(DeliveryService::class)->handleSpatieFailure($delivery, new \RuntimeException($event->errorMessage ?? 'Webhook call failed'));
+                    app(DeliveryService::class)->handleSpatieFailure($delivery, new \RuntimeException($event->errorMessage ?? 'Automation call failed'));
                 }
             });
         }

@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
-use Ashrafic\FilamentWebhookBridge\Contracts\ConditionOperator;
+use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
+use Ashrafic\FilamentAutomationBridge\Contracts\ConditionOperator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 

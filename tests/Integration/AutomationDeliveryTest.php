@@ -1,24 +1,24 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Integration;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Integration;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 use Illuminate\Support\Facades\Config;
 
-class WebhookDeliveryTest extends TestCase
+class AutomationDeliveryTest extends TestCase
 {
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Test Trigger',
             'model_class' => TestUser::class,
             'event' => EventEnum::Created,
@@ -28,13 +28,13 @@ class WebhookDeliveryTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ], $overrides));
     }
 
     public function test_dispatch_creates_delivery_on_model_created(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,
@@ -48,7 +48,7 @@ class WebhookDeliveryTest extends TestCase
         $delivery = $deliveryService->dispatch($trigger, $user, EventEnum::Created);
 
         $this->assertNotNull($delivery);
-        $this->assertInstanceOf(WebhookDelivery::class, $delivery);
+        $this->assertInstanceOf(AutomationDelivery::class, $delivery);
         $this->assertSame($trigger->id, $delivery->trigger_id);
         $this->assertSame(TestUser::class, $delivery->model_type);
         $this->assertSame($user->id, $delivery->model_id);
@@ -57,7 +57,7 @@ class WebhookDeliveryTest extends TestCase
 
     public function test_dispatch_creates_delivery_on_model_updated(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,
@@ -76,7 +76,7 @@ class WebhookDeliveryTest extends TestCase
 
     public function test_dispatch_creates_delivery_on_model_deleted(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,
@@ -95,7 +95,7 @@ class WebhookDeliveryTest extends TestCase
 
     public function test_skips_inactive_triggers(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,
@@ -103,7 +103,7 @@ class WebhookDeliveryTest extends TestCase
             'active' => false,
         ]);
 
-        $user = TestUser::create(['name' => 'No Webhook', 'email' => 'no@example.com']);
+        $user = TestUser::create(['name' => 'No Automation', 'email' => 'no@example.com']);
 
         $deliveryService = $this->app->make(DeliveryService::class);
         $delivery = $deliveryService->dispatch($trigger, $user, EventEnum::Created);
@@ -113,7 +113,7 @@ class WebhookDeliveryTest extends TestCase
 
     public function test_creates_delivery_record_with_correct_attributes(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,
@@ -137,7 +137,7 @@ class WebhookDeliveryTest extends TestCase
 
     public function test_respects_conditions_and_skips_delivery(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,
@@ -158,7 +158,7 @@ class WebhookDeliveryTest extends TestCase
 
     public function test_respects_conditions_and_dispatches_when_matching(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,
@@ -180,7 +180,7 @@ class WebhookDeliveryTest extends TestCase
 
     public function test_sandbox_mode_marks_delivery_as_success(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'model_class' => TestUser::class,

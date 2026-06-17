@@ -1,14 +1,14 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\HistoricalSyncService;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\HistoricalSyncService;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -23,9 +23,9 @@ class HistoricalSyncServiceTest extends TestCase
         Cache::flush();
     }
 
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Test Trigger',
             'model_class' => TestUser::class,
             'event' => EventEnum::Created,
@@ -35,7 +35,7 @@ class HistoricalSyncServiceTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ], $overrides));
     }
 
@@ -59,7 +59,7 @@ class HistoricalSyncServiceTest extends TestCase
     {
         $batchUuid = 'test-batch-uuid';
 
-        Cache::put("webhook_bridge.sync.{$batchUuid}", [
+        Cache::put("automation_bridge.sync.{$batchUuid}", [
             'status' => 'in_progress',
             'total' => 10,
             'processed' => 3,
@@ -81,7 +81,7 @@ class HistoricalSyncServiceTest extends TestCase
     {
         $batchUuid = 'completed-batch-uuid';
 
-        Cache::put("webhook_bridge.sync.{$batchUuid}", [
+        Cache::put("automation_bridge.sync.{$batchUuid}", [
             'status' => 'completed',
             'total' => 10,
             'processed' => 10,
@@ -100,7 +100,7 @@ class HistoricalSyncServiceTest extends TestCase
     {
         $batchUuid = 'already-cancelled-uuid';
 
-        Cache::put("webhook_bridge.sync.{$batchUuid}", [
+        Cache::put("automation_bridge.sync.{$batchUuid}", [
             'status' => 'cancelled',
             'total' => 10,
             'processed' => 3,
@@ -119,7 +119,7 @@ class HistoricalSyncServiceTest extends TestCase
     {
         $batchUuid = 'progress-test-uuid';
 
-        Cache::put("webhook_bridge.sync.{$batchUuid}", [
+        Cache::put("automation_bridge.sync.{$batchUuid}", [
             'status' => 'in_progress',
             'total' => 20,
             'processed' => 5,
@@ -166,7 +166,7 @@ class HistoricalSyncServiceTest extends TestCase
     {
         $batchUuid = 'eta-test-uuid';
 
-        Cache::put("webhook_bridge.sync.{$batchUuid}", [
+        Cache::put("automation_bridge.sync.{$batchUuid}", [
             'status' => 'in_progress',
             'total' => 100,
             'processed' => 25,

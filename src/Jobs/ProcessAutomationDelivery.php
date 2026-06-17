@@ -1,11 +1,11 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Jobs;
+namespace Ashrafic\FilamentAutomationBridge\Jobs;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Events\WebhookDeliveryCompleted;
-use Ashrafic\FilamentWebhookBridge\Events\WebhookDeliveryFailed;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Events\AutomationDeliveryCompleted;
+use Ashrafic\FilamentAutomationBridge\Events\AutomationDeliveryFailed;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -16,7 +16,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ProcessWebhookDelivery implements ShouldQueue
+class ProcessAutomationDelivery implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -28,21 +28,21 @@ class ProcessWebhookDelivery implements ShouldQueue
         public string $destinationUrl,
         public ?string $secret,
         public array $headers,
-        public int $webhookTimeout,
+        public int $requestTimeout,
         public int $maxRetries,
         public string $deliveryUuid,
         public bool $checkActive = true,
     ) {
         $this->tries = $this->maxRetries + 1;
-        $this->queue = config('filament-webhook-bridge.queue.queue_name', 'webhooks');
+        $this->queue = config('filament-automation-bridge.queue.queue_name', 'webhooks');
     }
 
     public function handle(): void
     {
-        $delivery = WebhookDelivery::find($this->deliveryId);
+        $delivery = AutomationDelivery::find($this->deliveryId);
 
         if ($delivery === null) {
-            Log::warning('ProcessWebhookDelivery: delivery not found', [
+            Log::warning('ProcessAutomationDelivery: delivery not found', [
                 'delivery_id' => $this->deliveryId,
             ]);
 
@@ -63,18 +63,18 @@ class ProcessWebhookDelivery implements ShouldQueue
             }
         }
 
-        if (config('filament-webhook-bridge.sandbox_mode', false)) {
+        if (config('filament-automation-bridge.sandbox_mode', false)) {
             $delivery->markSuccess(200, [], 'Sandbox mode - delivery simulated', 0);
 
-            event(new WebhookDeliveryCompleted($delivery));
+            event(new AutomationDeliveryCompleted($delivery));
 
             return;
         }
 
         $allHeaders = array_merge([
             'Content-Type' => 'application/json',
-            'User-Agent' => 'Filament-Webhook-Bridge/1.0 (Laravel)',
-            'X-Webhook-Delivery-Id' => $this->deliveryUuid,
+            'User-Agent' => 'Filament-Automation-Bridge/1.0 (Laravel)',
+            'X-Automation-Delivery-Id' => $this->deliveryUuid,
             'Accept' => 'application/json',
         ], $this->headers);
 
@@ -103,12 +103,12 @@ class ProcessWebhookDelivery implements ShouldQueue
             if ($httpStatus >= 200 && $httpStatus < 300) {
                 $delivery->markSuccess($httpStatus, $responseHeaders, $responseBody, $durationMs);
 
-                event(new WebhookDeliveryCompleted($delivery));
+                event(new AutomationDeliveryCompleted($delivery));
             } else {
-                $retryableStatusCodes = config('filament-webhook-bridge.retry.retryable_status_codes', [408, 429, 500, 502, 503, 504]);
+                $retryableStatusCodes = config('filament-automation-bridge.retry.retryable_status_codes', [408, 429, 500, 502, 503, 504]);
 
                 if (in_array($httpStatus, $retryableStatusCodes)) {
-                    Log::warning('ProcessWebhookDelivery: retryable HTTP error', [
+                    Log::warning('ProcessAutomationDelivery: retryable HTTP error', [
                         'delivery_id' => $this->deliveryId,
                         'http_status' => $httpStatus,
                         'attempt' => $this->attempts(),
@@ -124,10 +124,10 @@ class ProcessWebhookDelivery implements ShouldQueue
                     $durationMs,
                 );
 
-                event(new WebhookDeliveryFailed($delivery, "HTTP error: {$httpStatus}"));
+                event(new AutomationDeliveryFailed($delivery, "HTTP error: {$httpStatus}"));
             }
         } catch (ConnectException $e) {
-            Log::warning('ProcessWebhookDelivery: connection error', [
+            Log::warning('ProcessAutomationDelivery: connection error', [
                 'delivery_id' => $this->deliveryId,
                 'error' => $e->getMessage(),
             ]);
@@ -143,13 +143,13 @@ class ProcessWebhookDelivery implements ShouldQueue
                 $durationMs,
             );
 
-            event(new WebhookDeliveryFailed($delivery, $e->getMessage()));
+            event(new AutomationDeliveryFailed($delivery, $e->getMessage()));
         }
     }
 
     public function failed(\Throwable $exception): void
     {
-        $delivery = WebhookDelivery::find($this->deliveryId);
+        $delivery = AutomationDelivery::find($this->deliveryId);
 
         if ($delivery === null) {
             return;
@@ -162,12 +162,12 @@ class ProcessWebhookDelivery implements ShouldQueue
             null,
         );
 
-        event(new WebhookDeliveryFailed($delivery, $exception->getMessage()));
+        event(new AutomationDeliveryFailed($delivery, $exception->getMessage()));
     }
 
     public function backoff(): array
     {
-        $base = config('filament-webhook-bridge.retry.backoff_base', 10);
+        $base = config('filament-automation-bridge.retry.backoff_base', 10);
 
         return array_map(
             fn (int $i) => $base * (int) pow(10, $i),
@@ -177,6 +177,6 @@ class ProcessWebhookDelivery implements ShouldQueue
 
     public function tags(): array
     {
-        return ['webhook-bridge', 'delivery:'.$this->deliveryId];
+        return ['automation-bridge', 'delivery:'.$this->deliveryId];
     }
 }

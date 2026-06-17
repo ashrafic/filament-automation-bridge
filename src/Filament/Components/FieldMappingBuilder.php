@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Components;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Components;
 
-use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
+use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Closure;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Component;

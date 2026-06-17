@@ -4,18 +4,18 @@ return [
 
     'navigation' => [
         'group' => 'Integrations',
-        'triggers' => 'Webhook Triggers',
+        'triggers' => 'Automation Triggers',
         'deliveries' => 'Delivery Logs',
-        'health' => 'Webhook Health',
+        'health' => 'Automation Health',
     ],
 
     'labels' => [
-        'trigger' => 'Webhook Trigger',
-        'triggers' => 'Webhook Triggers',
+        'trigger' => 'Automation Trigger',
+        'triggers' => 'Automation Triggers',
         'delivery' => 'Delivery',
         'deliveries' => 'Delivery Logs',
-        'template' => 'Webhook Template',
-        'templates' => 'Webhook Templates',
+        'template' => 'Automation Template',
+        'templates' => 'Automation Templates',
     ],
 
     'form' => [
@@ -36,7 +36,7 @@ return [
         'conditions_field' => 'Conditions',
         'active' => 'Active',
         'secret' => 'Secret',
-        'webhook_timeout' => 'Timeout (seconds)',
+        'request_timeout' => 'Timeout (seconds)',
         'max_retries' => 'Max Retries',
         'ip_whitelist' => 'IP Whitelist',
         'encrypt_payload' => 'Encrypt Payload',
@@ -92,9 +92,9 @@ return [
     ],
 
     'notifications' => [
-        'created' => 'Webhook trigger created successfully.',
-        'updated' => 'Webhook trigger updated successfully.',
-        'deleted' => 'Webhook trigger deleted successfully.',
+        'created' => 'automation trigger created successfully.',
+        'updated' => 'automation trigger updated successfully.',
+        'deleted' => 'automation trigger deleted successfully.',
         'activated' => 'Trigger activated',
         'deactivated' => 'Trigger deactivated',
         'duplicated' => 'Trigger duplicated',
@@ -116,15 +116,15 @@ return [
     ],
 
     'validation' => [
-        'trigger_not_found' => 'Webhook trigger not found.',
-        'trigger_not_active' => 'Webhook trigger is not active.',
+        'trigger_not_found' => 'automation trigger not found.',
+        'trigger_not_active' => 'automation trigger is not active.',
         'model_class_not_found' => 'Model class does not exist.',
         'sync_already_in_progress' => 'A historical sync is already in progress for this trigger.',
         'delivery_cannot_retry' => 'Delivery cannot be retried.',
     ],
 
     'widgets' => [
-        'health_title' => 'Webhook Health',
+        'health_title' => 'Automation Health',
         'active_triggers' => 'Active Triggers',
         'deliveries_24h' => 'Deliveries (24h)',
         'success_rate' => 'Success Rate',
@@ -134,14 +134,14 @@ return [
 
     'commands' => [
         'install' => [
-            'installing' => 'Installing Filament Webhook Bridge...',
+            'installing' => 'Installing Filament Automation Bridge...',
             'seeding_templates' => 'Seeding built-in templates...',
             'templates_seeded' => 'Built-in templates seeded successfully.',
             'templates_seed_error' => 'Could not seed templates: :error',
-            'installed' => 'Filament Webhook Bridge installed successfully!',
+            'installed' => 'Filament Automation Bridge installed successfully!',
             'next_steps' => 'Next steps:',
             'add_plugin' => 'Add the plugin to your PanelProvider:',
-            'start_queue' => 'Start a queue worker for webhook delivery:',
+            'start_queue' => 'Start a queue worker for automation delivery:',
         ],
         'prune' => [
             'no_logs' => 'No delivery logs older than :days days found.',
@@ -159,9 +159,9 @@ return [
             'batch_size' => 'Batch size: :size',
             'apply_conditions' => 'Apply conditions: :apply',
             'started' => 'Historical sync started. Batch UUID: :uuid',
-            'check_progress' => 'Use `php artisan webhook-bridge:sync-progress :uuid` to check progress.',
-            'not_found' => 'Webhook trigger with ID :id not found.',
-            'not_active' => 'Webhook trigger [:name] (ID: :id) is not active.',
+            'check_progress' => 'Use `php artisan automation-bridge:sync-progress :uuid` to check progress.',
+            'not_found' => 'automation trigger with ID :id not found.',
+            'not_active' => 'automation trigger [:name] (ID: :id) is not active.',
             'failed' => 'Failed to start sync: :error',
         ],
         'test' => [

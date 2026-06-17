@@ -1,26 +1,26 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Integration;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Integration;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Exceptions\SecurityException;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\SecurityService;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Exceptions\SecurityException;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\SecurityService;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
 class SecurityIntegrationTest extends TestCase
 {
     protected SecurityService $securityService;
 
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Security Test Trigger',
             'model_class' => TestUser::class,
             'event' => EventEnum::Created,
@@ -30,7 +30,7 @@ class SecurityIntegrationTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ], $overrides));
     }
 
@@ -97,7 +97,7 @@ class SecurityIntegrationTest extends TestCase
             'secret' => 'test-secret',
         ]);
 
-        $delivery = WebhookDelivery::create([
+        $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => 'TestUser',
             'model_id' => 1,
@@ -110,9 +110,9 @@ class SecurityIntegrationTest extends TestCase
 
         $headers = $this->securityService->buildHeaders($trigger, $delivery);
 
-        $this->assertArrayHasKey('X-Webhook-Timestamp', $headers);
-        $this->assertArrayHasKey('X-Webhook-Signature', $headers);
-        $this->assertMatchesRegularExpression('/^\d+$/', $headers['X-Webhook-Timestamp']);
-        $this->assertStringStartsWith('sha256=', $headers['X-Webhook-Signature']);
+        $this->assertArrayHasKey('X-Automation-Timestamp', $headers);
+        $this->assertArrayHasKey('X-Automation-Signature', $headers);
+        $this->assertMatchesRegularExpression('/^\d+$/', $headers['X-Automation-Timestamp']);
+        $this->assertStringStartsWith('sha256=', $headers['X-Automation-Signature']);
     }
 }

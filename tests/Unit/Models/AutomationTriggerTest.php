@@ -1,21 +1,21 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Models;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Models;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 use Illuminate\Support\Facades\Cache;
 
-class WebhookTriggerTest extends TestCase
+class AutomationTriggerTest extends TestCase
 {
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Test Trigger',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
@@ -25,7 +25,7 @@ class WebhookTriggerTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ], $overrides));
     }
 
@@ -94,8 +94,8 @@ class WebhookTriggerTest extends TestCase
 
     public function test_generates_auto_secret(): void
     {
-        $secret1 = WebhookTrigger::generateSecret();
-        $secret2 = WebhookTrigger::generateSecret();
+        $secret1 = AutomationTrigger::generateSecret();
+        $secret2 = AutomationTrigger::generateSecret();
 
         $this->assertSame(64, strlen($secret1));
         $this->assertNotSame($secret1, $secret2);
@@ -106,7 +106,7 @@ class WebhookTriggerTest extends TestCase
         $this->createTrigger(['name' => 'Active', 'active' => true]);
         $this->createTrigger(['name' => 'Inactive', 'active' => false]);
 
-        $active = WebhookTrigger::active()->get();
+        $active = AutomationTrigger::active()->get();
 
         $this->assertCount(1, $active);
         $this->assertSame('Active', $active->first()->name);
@@ -127,7 +127,7 @@ class WebhookTriggerTest extends TestCase
             'event' => EventEnum::Created,
         ]);
 
-        $results = WebhookTrigger::forModelEvent('App\\Models\\User', EventEnum::Created)->get();
+        $results = AutomationTrigger::forModelEvent('App\\Models\\User', EventEnum::Created)->get();
 
         $this->assertCount(1, $results);
         $this->assertSame('App\\Models\\User', $results->first()->model_class);
@@ -138,7 +138,7 @@ class WebhookTriggerTest extends TestCase
     {
         $trigger = $this->createTrigger();
 
-        WebhookDelivery::create([
+        AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => 'App\\Models\\User',
             'model_id' => 1,
@@ -148,7 +148,7 @@ class WebhookTriggerTest extends TestCase
             'max_retries' => 3,
             'source' => 'realtime',
         ]);
-        WebhookDelivery::create([
+        AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => 'App\\Models\\User',
             'model_id' => 2,
@@ -169,7 +169,7 @@ class WebhookTriggerTest extends TestCase
     {
         $trigger = $this->createTrigger();
 
-        WebhookDelivery::create([
+        AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => 'App\\Models\\User',
             'model_id' => 1,
@@ -181,19 +181,19 @@ class WebhookTriggerTest extends TestCase
         ]);
 
         $this->assertCount(1, $trigger->deliveries);
-        $this->assertInstanceOf(WebhookDelivery::class, $trigger->deliveries->first());
+        $this->assertInstanceOf(AutomationDelivery::class, $trigger->deliveries->first());
     }
 
     public function test_invalidates_cache_on_save(): void
     {
-        Cache::put('webhook_bridge.triggers.App\\Models\\User.created', 'cached-value');
+        Cache::put('automation_bridge.triggers.App\\Models\\User.created', 'cached-value');
 
         $this->createTrigger([
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
         ]);
 
-        $this->assertNull(Cache::get('webhook_bridge.triggers.App\\Models\\User.created'));
+        $this->assertNull(Cache::get('automation_bridge.triggers.App\\Models\\User.created'));
     }
 
     public function test_invalidates_cache_on_delete(): void
@@ -203,10 +203,10 @@ class WebhookTriggerTest extends TestCase
             'event' => EventEnum::Created,
         ]);
 
-        Cache::put('webhook_bridge.triggers.App\\Models\\User.created', 'cached-value');
+        Cache::put('automation_bridge.triggers.App\\Models\\User.created', 'cached-value');
 
         $trigger->delete();
 
-        $this->assertNull(Cache::get('webhook_bridge.triggers.App\\Models\\User.created'));
+        $this->assertNull(Cache::get('automation_bridge.triggers.App\\Models\\User.created'));
     }
 }

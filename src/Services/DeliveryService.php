@@ -1,16 +1,16 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Events\WebhookDispatched;
-use Ashrafic\FilamentWebhookBridge\Exceptions\DeliveryFailedException;
-use Ashrafic\FilamentWebhookBridge\Jobs\ProcessWebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Events\AutomationDispatched;
+use Ashrafic\FilamentAutomationBridge\Exceptions\DeliveryFailedException;
+use Ashrafic\FilamentAutomationBridge\Jobs\ProcessAutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +27,7 @@ class DeliveryService
         protected RateLimiterService $rateLimiterService,
     ) {}
 
-    public function dispatch(WebhookTrigger $trigger, Model $model, EventEnum $event, array $original = [], array $context = []): ?WebhookDelivery
+    public function dispatch(AutomationTrigger $trigger, Model $model, EventEnum $event, array $original = [], array $context = []): ?AutomationDelivery
     {
         try {
             if (! $this->conditionEvaluator->evaluate($model, $trigger->conditions, $original)) {
@@ -59,7 +59,7 @@ class DeliveryService
 
         $headers = $this->securityService->sign($payload, $trigger->secret);
 
-        $delivery = WebhookDelivery::create([
+        $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => get_class($model),
             'model_id' => $model->getKey(),
@@ -67,12 +67,12 @@ class DeliveryService
             'headers' => $headers,
             'status' => DeliveryStatus::Pending,
             'retry_count' => 0,
-            'max_retries' => $trigger->max_retries ?? config('filament-webhook-bridge.retry.default_max_attempts', 3),
+            'max_retries' => $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
             'source' => DeliverySource::Realtime,
             'dispatched_at' => now(),
         ]);
 
-        if (config('filament-webhook-bridge.sandbox_mode', false)) {
+        if (config('filament-automation-bridge.sandbox_mode', false)) {
             $delivery->markSuccess(200, [], 'Sandbox mode - delivery simulated', 0);
 
             Log::info('DeliveryService: sandbox mode - delivery simulated', [
@@ -97,26 +97,26 @@ class DeliveryService
             return $delivery;
         }
 
-        $queue = config('filament-webhook-bridge.queue.queue_name', 'webhooks');
-        $connection = config('filament-webhook-bridge.queue.connection');
+        $queue = config('filament-automation-bridge.queue.queue_name', 'webhooks');
+        $connection = config('filament-automation-bridge.queue.connection');
 
-        ProcessWebhookDelivery::dispatch(
+        ProcessAutomationDelivery::dispatch(
             $delivery->id,
             $delivery->payload,
             $trigger->destination_url,
             $trigger->secret,
             $delivery->headers ?? [],
-            $trigger->webhook_timeout ?? 30,
-            $trigger->max_retries ?? config('filament-webhook-bridge.retry.default_max_attempts', 3),
+            $trigger->request_timeout ?? 30,
+            $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
             $delivery->uuid,
         )->onQueue($queue)->onConnection($connection);
 
-        WebhookDispatched::dispatch($delivery);
+        AutomationDispatched::dispatch($delivery);
 
         return $delivery;
     }
 
-    public function dispatchForSchedule(WebhookTrigger $trigger, Model $model): ?WebhookDelivery
+    public function dispatchForSchedule(AutomationTrigger $trigger, Model $model): ?AutomationDelivery
     {
         return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, [
             'schedule_type' => $trigger->trigger_config['schedule_type'] ?? 'daily',
@@ -124,14 +124,14 @@ class DeliveryService
         ]);
     }
 
-    public function dispatchForDateCondition(WebhookTrigger $trigger, Model $model, array $contextData = []): ?WebhookDelivery
+    public function dispatchForDateCondition(AutomationTrigger $trigger, Model $model, array $contextData = []): ?AutomationDelivery
     {
         return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, array_merge([
             'triggered_at' => now()->toIso8601String(),
         ], $contextData));
     }
 
-    public function dispatchForManualTrigger(WebhookTrigger $trigger, Model $model, ?int $userId = null): ?WebhookDelivery
+    public function dispatchForManualTrigger(AutomationTrigger $trigger, Model $model, ?int $userId = null): ?AutomationDelivery
     {
         return $this->dispatchGeneric($trigger, $model, DeliverySource::ManualRetry, [
             'user_id' => $userId ?? auth()->id(),
@@ -140,7 +140,7 @@ class DeliveryService
         ]);
     }
 
-    public function dispatchForEventTrigger(WebhookTrigger $trigger, Model $model, array $eventProperties = []): ?WebhookDelivery
+    public function dispatchForEventTrigger(AutomationTrigger $trigger, Model $model, array $eventProperties = []): ?AutomationDelivery
     {
         return $this->dispatchGeneric($trigger, $model, DeliverySource::Realtime, [
             'event_class' => $trigger->trigger_config['event_class'] ?? '',
@@ -149,7 +149,7 @@ class DeliveryService
         ]);
     }
 
-    protected function dispatchGeneric(WebhookTrigger $trigger, Model $model, DeliverySource $source, array $triggerContext = []): ?WebhookDelivery
+    protected function dispatchGeneric(AutomationTrigger $trigger, Model $model, DeliverySource $source, array $triggerContext = []): ?AutomationDelivery
     {
         try {
             $payload = $this->buildGenericPayload($trigger, $model, $triggerContext);
@@ -165,7 +165,7 @@ class DeliveryService
 
         $headers = $this->securityService->sign($payload, $trigger->secret);
 
-        $delivery = WebhookDelivery::create([
+        $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => get_class($model),
             'model_id' => $model->getKey(),
@@ -173,12 +173,12 @@ class DeliveryService
             'headers' => $headers,
             'status' => DeliveryStatus::Pending,
             'retry_count' => 0,
-            'max_retries' => $trigger->max_retries ?? config('filament-webhook-bridge.retry.default_max_attempts', 3),
+            'max_retries' => $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
             'source' => $source,
             'dispatched_at' => now(),
         ]);
 
-        if (config('filament-webhook-bridge.sandbox_mode', false)) {
+        if (config('filament-automation-bridge.sandbox_mode', false)) {
             $delivery->markSuccess(200, [], 'Sandbox mode - delivery simulated', 0);
 
             Log::info('DeliveryService: sandbox mode - delivery simulated (generic)', [
@@ -203,26 +203,26 @@ class DeliveryService
             return $delivery;
         }
 
-        $queue = config('filament-webhook-bridge.queue.queue_name', 'webhooks');
-        $connection = config('filament-webhook-bridge.queue.connection');
+        $queue = config('filament-automation-bridge.queue.queue_name', 'webhooks');
+        $connection = config('filament-automation-bridge.queue.connection');
 
-        ProcessWebhookDelivery::dispatch(
+        ProcessAutomationDelivery::dispatch(
             $delivery->id,
             $delivery->payload,
             $trigger->destination_url,
             $trigger->secret,
             $delivery->headers ?? [],
-            $trigger->webhook_timeout ?? 30,
-            $trigger->max_retries ?? config('filament-webhook-bridge.retry.default_max_attempts', 3),
+            $trigger->request_timeout ?? 30,
+            $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
             $delivery->uuid,
         )->onQueue($queue)->onConnection($connection);
 
-        WebhookDispatched::dispatch($delivery);
+        AutomationDispatched::dispatch($delivery);
 
         return $delivery;
     }
 
-    protected function buildGenericPayload(WebhookTrigger $trigger, Model $model, array $triggerContext = []): array
+    protected function buildGenericPayload(AutomationTrigger $trigger, Model $model, array $triggerContext = []): array
     {
         $payloadMode = $trigger->payload_mode;
 
@@ -238,7 +238,7 @@ class DeliveryService
             'event' => $eventValue,
             'model' => get_class($model),
             'triggered_at' => now()->toIso8601String(),
-            'webhook_id' => $trigger->id,
+            'automation_id' => $trigger->id,
             'trigger_context' => $triggerContext,
             'data' => $data,
         ];
@@ -287,7 +287,7 @@ class DeliveryService
     protected function extractAllAttributesProxy(Model $model): array
     {
         $hidden = $model->getHidden();
-        $excluded = config('filament-webhook-bridge.field_schema.excluded_attributes', [
+        $excluded = config('filament-automation-bridge.field_schema.excluded_attributes', [
             'password',
             'remember_token',
             'api_token',
@@ -323,15 +323,15 @@ class DeliveryService
     public function getActiveTriggers(string $modelClass, EventEnum $event): Collection
     {
         return Cache::remember(
-            "webhook_bridge.triggers.{$modelClass}.{$event->value}",
+            "automation_bridge.triggers.{$modelClass}.{$event->value}",
             300,
-            fn () => WebhookTrigger::active()
+            fn () => AutomationTrigger::active()
                 ->forModelEvent($modelClass, $event)
                 ->get(),
         );
     }
 
-    public function retry(WebhookDelivery $delivery): WebhookDelivery
+    public function retry(AutomationDelivery $delivery): AutomationDelivery
     {
         if (! $delivery->canRetry()) {
             throw new \RuntimeException('Delivery cannot be retried.');
@@ -339,7 +339,7 @@ class DeliveryService
 
         $trigger = $delivery->trigger;
 
-        $newDelivery = WebhookDelivery::create([
+        $newDelivery = AutomationDelivery::create([
             'trigger_id' => $delivery->trigger_id,
             'model_type' => $delivery->model_type,
             'model_id' => $delivery->model_id,
@@ -352,16 +352,16 @@ class DeliveryService
             'dispatched_at' => now(),
         ]);
 
-        $queue = config('filament-webhook-bridge.queue.queue_name', 'webhooks');
-        $connection = config('filament-webhook-bridge.queue.connection');
+        $queue = config('filament-automation-bridge.queue.queue_name', 'webhooks');
+        $connection = config('filament-automation-bridge.queue.connection');
 
-        ProcessWebhookDelivery::dispatch(
+        ProcessAutomationDelivery::dispatch(
             $newDelivery->id,
             $newDelivery->payload,
             $trigger->destination_url,
             $trigger->secret,
             $newDelivery->headers ?? [],
-            $trigger->webhook_timeout ?? 30,
+            $trigger->request_timeout ?? 30,
             $newDelivery->max_retries,
             $newDelivery->uuid,
         )->onQueue($queue)->onConnection($connection);
@@ -373,7 +373,7 @@ class DeliveryService
     {
         $ids = $deliveryIds instanceof Collection ? $deliveryIds->toArray() : $deliveryIds;
 
-        $deliveries = WebhookDelivery::whereIn('id', $ids)
+        $deliveries = AutomationDelivery::whereIn('id', $ids)
             ->whereNot('status', DeliveryStatus::Pending)
             ->whereNot('status', DeliveryStatus::Cancelled)
             ->get();
@@ -399,7 +399,7 @@ class DeliveryService
         return $queued;
     }
 
-    public function testConnection(WebhookTrigger $trigger): array
+    public function testConnection(AutomationTrigger $trigger): array
     {
         $payload = $this->payloadBuilder->buildSample($trigger);
 
@@ -407,13 +407,13 @@ class DeliveryService
 
         $allHeaders = array_merge([
             'Content-Type' => 'application/json',
-            'User-Agent' => 'Filament-Webhook-Bridge/1.0 (Laravel)',
-            'X-Webhook-Trigger-Id' => (string) $trigger->id,
-            'X-Webhook-Test' => 'true',
+            'User-Agent' => 'Filament-Automation-Bridge/1.0 (Laravel)',
+            'X-Automation-Trigger-Id' => (string) $trigger->id,
+            'X-Automation-Test' => 'true',
             'Accept' => 'application/json',
         ], $headers);
 
-        $delivery = WebhookDelivery::create([
+        $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => $trigger->model_class,
             'model_id' => null,
@@ -475,7 +475,7 @@ class DeliveryService
         ];
     }
 
-    public function handleSpatieSuccess(WebhookDelivery $delivery, ResponseInterface $response): void
+    public function handleSpatieSuccess(AutomationDelivery $delivery, ResponseInterface $response): void
     {
         $responseBody = $response->getBody()->getContents();
         $responseHeaders = $this->parseResponseHeaders($response);
@@ -488,7 +488,7 @@ class DeliveryService
         );
     }
 
-    public function handleSpatieFailure(WebhookDelivery $delivery, \Throwable $exception): void
+    public function handleSpatieFailure(AutomationDelivery $delivery, \Throwable $exception): void
     {
         $delivery->markFailed(
             $delivery->retry_count + 1,
@@ -498,9 +498,9 @@ class DeliveryService
         );
     }
 
-    public function cancelPendingDeliveries(WebhookTrigger $trigger): int
+    public function cancelPendingDeliveries(AutomationTrigger $trigger): int
     {
-        return WebhookDelivery::where('trigger_id', $trigger->id)
+        return AutomationDelivery::where('trigger_id', $trigger->id)
             ->where('status', DeliveryStatus::Pending)
             ->update(['status' => DeliveryStatus::Cancelled->value]);
     }

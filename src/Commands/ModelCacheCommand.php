@@ -1,13 +1,13 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Commands;
+namespace Ashrafic\FilamentAutomationBridge\Commands;
 
-use Ashrafic\FilamentWebhookBridge\Services\ModelDiscoveryService;
+use Ashrafic\FilamentAutomationBridge\Services\ModelDiscoveryService;
 use Illuminate\Console\Command;
 
 class ModelCacheCommand extends Command
 {
-    protected $signature = 'webhook-bridge:model-cache';
+    protected $signature = 'automation-bridge:model-cache';
 
     protected $description = 'Clear and rebuild the model discovery cache';
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Enums;
+namespace Ashrafic\FilamentAutomationBridge\Enums;
 
 enum DestinationType: string
 {

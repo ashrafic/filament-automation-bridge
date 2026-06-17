@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Triggers;
+namespace Ashrafic\FilamentAutomationBridge\Triggers;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\TriggerContract;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Contracts\TriggerContract;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use RuntimeException;
 
 class TriggerManager
@@ -52,7 +52,7 @@ class TriggerManager
     }
 
     /** Subscribe a trigger for listening */
-    public function subscribe(WebhookTrigger $trigger): void
+    public function subscribe(AutomationTrigger $trigger): void
     {
         $cleanup = $this->get($trigger->trigger_type)->subscribe($trigger);
         if ($cleanup) {
@@ -61,7 +61,7 @@ class TriggerManager
     }
 
     /** Unsubscribe a trigger */
-    public function unsubscribe(WebhookTrigger $trigger): void
+    public function unsubscribe(AutomationTrigger $trigger): void
     {
         $this->get($trigger->trigger_type)->unsubscribe($trigger);
         if (isset($this->cleanupCallbacks[$trigger->id])) {

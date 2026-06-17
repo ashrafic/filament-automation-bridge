@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Concerns\HasWebhookTriggers;
+use Ashrafic\FilamentAutomationBridge\Concerns\HasAutomationTriggers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -13,8 +13,8 @@ class ModelDiscoveryService
     public function getAllModels(): array
     {
         return Cache::remember(
-            config('filament-webhook-bridge.models.cache_key', 'webhook_bridge.models'),
-            config('filament-webhook-bridge.models.cache_ttl', 3600),
+            config('filament-automation-bridge.models.cache_key', 'automation_bridge.models'),
+            config('filament-automation-bridge.models.cache_ttl', 3600),
             fn () => $this->discoverModels()
         );
     }
@@ -34,7 +34,7 @@ class ModelDiscoveryService
 
     public function refreshCache(): void
     {
-        Cache::forget(config('filament-webhook-bridge.models.cache_key', 'webhook_bridge.models'));
+        Cache::forget(config('filament-automation-bridge.models.cache_key', 'automation_bridge.models'));
 
         $this->getAllModels();
     }
@@ -51,7 +51,7 @@ class ModelDiscoveryService
     protected function discoverModels(): array
     {
         $models = [];
-        $exclude = config('filament-webhook-bridge.models.exclude', []);
+        $exclude = config('filament-automation-bridge.models.exclude', []);
 
         foreach ($this->scanPaths() as $fqcn => $basename) {
             if (in_array($fqcn, $exclude)) {
@@ -68,7 +68,7 @@ class ModelDiscoveryService
 
     protected function scanPaths(): \Generator
     {
-        $paths = config('filament-webhook-bridge.models.paths', [app_path('Models')]);
+        $paths = config('filament-automation-bridge.models.paths', [app_path('Models')]);
 
         foreach ($paths as $path) {
             if (! is_dir($path)) {
@@ -124,7 +124,7 @@ class ModelDiscoveryService
         $result = [];
 
         foreach ($models as $fqcn => $basename) {
-            if (class_exists($fqcn) && $this->hasWebhookTriggersTrait($fqcn)) {
+            if (class_exists($fqcn) && $this->hasAutomationTriggersTrait($fqcn)) {
                 $result[$fqcn] = static::getModelDisplayName($fqcn);
             }
         }
@@ -132,7 +132,7 @@ class ModelDiscoveryService
         return $result;
     }
 
-    protected function hasWebhookTriggersTrait(string $class): bool
+    protected function hasAutomationTriggersTrait(string $class): bool
     {
         if (! class_exists($class)) {
             return false;
@@ -140,13 +140,13 @@ class ModelDiscoveryService
 
         $traits = class_uses_recursive($class);
 
-        return in_array(HasWebhookTriggers::class, $traits);
+        return in_array(HasAutomationTriggers::class, $traits);
     }
 
     public static function getModelDisplayName(string $class): string
     {
-        if (class_exists($class) && method_exists($class, 'getWebhookDisplayName')) {
-            return $class::getWebhookDisplayName();
+        if (class_exists($class) && method_exists($class, 'getAutomationDisplayName')) {
+            return $class::getAutomationDisplayName();
         }
 
         return class_basename($class);

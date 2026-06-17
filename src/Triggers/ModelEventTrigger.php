@@ -1,11 +1,11 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Triggers;
+namespace Ashrafic\FilamentAutomationBridge\Triggers;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\TriggerContract;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\FieldSchemaAnalyzer;
+use Ashrafic\FilamentAutomationBridge\Contracts\TriggerContract;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Filament\Forms;
 use Illuminate\Database\Eloquent\Model;
 
@@ -101,10 +101,10 @@ class ModelEventTrigger implements TriggerContract
         return ['trigger_event' => $config['event'] ?? 'created'];
     }
 
-    public function subscribe(WebhookTrigger $trigger): ?\Closure
+    public function subscribe(AutomationTrigger $trigger): ?\Closure
     {
         return null;
     }
 
-    public function unsubscribe(WebhookTrigger $trigger): void {}
+    public function unsubscribe(AutomationTrigger $trigger): void {}
 }

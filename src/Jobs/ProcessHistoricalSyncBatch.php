@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Jobs;
+namespace Ashrafic\FilamentAutomationBridge\Jobs;
 
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\HistoricalSyncService;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\HistoricalSyncService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -23,18 +23,18 @@ class ProcessHistoricalSyncBatch implements ShouldQueue
         public string $modelClass,
         public bool $applyConditions,
     ) {
-        $this->onQueue(config('filament-webhook-bridge.queue.historical_sync_queue_name', 'webhooks-sync'));
+        $this->onQueue(config('filament-automation-bridge.queue.historical_sync_queue_name', 'webhooks-sync'));
     }
 
     public function handle(HistoricalSyncService $syncService): void
     {
-        $data = Cache::get("webhook_bridge.sync.{$this->batchUuid}");
+        $data = Cache::get("automation_bridge.sync.{$this->batchUuid}");
 
         if ($data === null || ($data['status'] ?? null) === 'cancelled') {
             return;
         }
 
-        $trigger = WebhookTrigger::find($this->triggerId);
+        $trigger = AutomationTrigger::find($this->triggerId);
 
         if ($trigger === null || ! $trigger->active) {
             Log::warning('ProcessHistoricalSyncBatch: trigger not found or inactive', [
@@ -55,6 +55,6 @@ class ProcessHistoricalSyncBatch implements ShouldQueue
 
     public function tags(): array
     {
-        return ['webhook-bridge', 'sync:'.$this->batchUuid];
+        return ['automation-bridge', 'sync:'.$this->batchUuid];
     }
 }

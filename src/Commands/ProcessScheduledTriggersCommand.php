@@ -1,10 +1,10 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Commands;
+namespace Ashrafic\FilamentAutomationBridge\Commands;
 
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
-use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
 use Cron\CronExpression;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\Cache;
 
 class ProcessScheduledTriggersCommand extends Command
 {
-    protected $signature = 'webhook-bridge:process-scheduled';
+    protected $signature = 'automation-bridge:process-scheduled';
 
-    protected $description = 'Process all active schedule-based webhook triggers';
+    protected $description = 'Process all active schedule-based automation triggers';
 
     public function handle(): int
     {
-        $triggers = WebhookTrigger::active()
+        $triggers = AutomationTrigger::active()
             ->where('trigger_type', 'schedule')
             ->get();
 
@@ -80,7 +80,7 @@ class ProcessScheduledTriggersCommand extends Command
 
     protected function processDateConditionTriggers(): void
     {
-        $triggers = WebhookTrigger::active()
+        $triggers = AutomationTrigger::active()
             ->where('trigger_type', 'date-condition')
             ->get();
 
@@ -106,7 +106,7 @@ class ProcessScheduledTriggersCommand extends Command
 
             $modelClass::query()->chunkById(100, function ($records) use ($trigger, $triggerInstance, $config, $deliveryService, &$dispatched) {
                 foreach ($records as $record) {
-                    $cacheKey = "webhook_bridge.date_condition.last_run.{$trigger->id}.{$record->getKey()}";
+                    $cacheKey = "automation_bridge.date_condition.last_run.{$trigger->id}.{$record->getKey()}";
                     $today = now()->toDateString();
 
                     if (Cache::get($cacheKey) === $today) {
@@ -145,7 +145,7 @@ class ProcessScheduledTriggersCommand extends Command
         }
     }
 
-    protected function shouldRun(WebhookTrigger $trigger, string $scheduleType, array $config): bool
+    protected function shouldRun(AutomationTrigger $trigger, string $scheduleType, array $config): bool
     {
         return match ($scheduleType) {
             'hourly' => $this->shouldRunHourly($trigger),
@@ -157,9 +157,9 @@ class ProcessScheduledTriggersCommand extends Command
         };
     }
 
-    protected function shouldRunHourly(WebhookTrigger $trigger): bool
+    protected function shouldRunHourly(AutomationTrigger $trigger): bool
     {
-        $cacheKey = "webhook_bridge.schedule.last_run.{$trigger->id}.hourly";
+        $cacheKey = "automation_bridge.schedule.last_run.{$trigger->id}.hourly";
         $lastRun = Cache::get($cacheKey);
         $currentHour = now()->format('Y-m-d H:00');
 
@@ -170,9 +170,9 @@ class ProcessScheduledTriggersCommand extends Command
         return true;
     }
 
-    protected function shouldRunDaily(WebhookTrigger $trigger): bool
+    protected function shouldRunDaily(AutomationTrigger $trigger): bool
     {
-        $cacheKey = "webhook_bridge.schedule.last_run.{$trigger->id}.daily";
+        $cacheKey = "automation_bridge.schedule.last_run.{$trigger->id}.daily";
         $lastRun = Cache::get($cacheKey);
         $today = now()->toDateString();
 
@@ -183,9 +183,9 @@ class ProcessScheduledTriggersCommand extends Command
         return true;
     }
 
-    protected function shouldRunWeekly(WebhookTrigger $trigger): bool
+    protected function shouldRunWeekly(AutomationTrigger $trigger): bool
     {
-        $cacheKey = "webhook_bridge.schedule.last_run.{$trigger->id}.weekly";
+        $cacheKey = "automation_bridge.schedule.last_run.{$trigger->id}.weekly";
         $lastRun = Cache::get($cacheKey);
         $currentWeek = now()->format('Y-W');
 
@@ -196,9 +196,9 @@ class ProcessScheduledTriggersCommand extends Command
         return true;
     }
 
-    protected function shouldRunMonthly(WebhookTrigger $trigger): bool
+    protected function shouldRunMonthly(AutomationTrigger $trigger): bool
     {
-        $cacheKey = "webhook_bridge.schedule.last_run.{$trigger->id}.monthly";
+        $cacheKey = "automation_bridge.schedule.last_run.{$trigger->id}.monthly";
         $lastRun = Cache::get($cacheKey);
         $currentMonth = now()->format('Y-m');
 
@@ -220,7 +220,7 @@ class ProcessScheduledTriggersCommand extends Command
         }
     }
 
-    protected function markRun(WebhookTrigger $trigger, string $scheduleType): void
+    protected function markRun(AutomationTrigger $trigger, string $scheduleType): void
     {
         $period = match ($scheduleType) {
             'hourly' => now()->format('Y-m-d H:00'),
@@ -232,7 +232,7 @@ class ProcessScheduledTriggersCommand extends Command
         };
 
         Cache::put(
-            "webhook_bridge.schedule.last_run.{$trigger->id}.{$scheduleType}",
+            "automation_bridge.schedule.last_run.{$trigger->id}.{$scheduleType}",
             $period,
             now()->addDays(60),
         );

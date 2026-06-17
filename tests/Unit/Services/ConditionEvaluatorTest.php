@@ -1,13 +1,13 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Conditions\ConditionRegistry;
-use Ashrafic\FilamentWebhookBridge\Services\ConditionEvaluator;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestLead;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
+use Ashrafic\FilamentAutomationBridge\Services\ConditionEvaluator;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestLead;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestOrder;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
 class ConditionEvaluatorTest extends TestCase
 {

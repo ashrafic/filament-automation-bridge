@@ -1,26 +1,26 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Commands;
+namespace Ashrafic\FilamentAutomationBridge\Commands;
 
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Illuminate\Console\Command;
 
 class TestConnectionCommand extends Command
 {
-    protected $signature = 'webhook-bridge:test
+    protected $signature = 'automation-bridge:test
         {triggerId : The ID of the trigger to test}';
 
-    protected $description = 'Test a webhook trigger connection';
+    protected $description = 'Test a automation trigger connection';
 
     public function handle(): int
     {
         $triggerId = $this->argument('triggerId');
 
-        $trigger = WebhookTrigger::find($triggerId);
+        $trigger = AutomationTrigger::find($triggerId);
 
         if (! $trigger) {
-            $this->error("Webhook trigger with ID {$triggerId} not found.");
+            $this->error("automation trigger with ID {$triggerId} not found.");
 
             return self::FAILURE;
         }

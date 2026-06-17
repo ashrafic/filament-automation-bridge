@@ -1,12 +1,12 @@
 {
-    "name": "ashrafic/filament-webhook-bridge",
-    "description": "Turn any Eloquent model event into a webhook trigger for Zapier, Make, or n8n — without writing code.",
+    "name": "ashrafic/filament-automation-bridge",
+    "description": "Turn any Eloquent model event into an automation trigger for Zapier, Make, or n8n — without writing code.",
     "type": "filament-plugin",
     "license": "MIT",
     "keywords": [
         "filament",
         "laravel",
-        "webhook",
+        "automation",
         "zapier",
         "make",
         "n8n",
@@ -14,13 +14,14 @@
     ],
     "authors": [
         {
-            "name": "Ashraf Islam",
-            "email": "ashraf@ashrafic.com"
+            "name": "Ashrafic Labs",
+            "email": "hello@ashraficlabs.com",
+            "homepage": "https://ashraficlabs.com"
         }
     ],
     "support": {
-        "issues": "https://github.com/ashrafic/filament-webhook-bridge/issues",
-        "source": "https://github.com/ashrafic/filament-webhook-bridge"
+        "issues": "https://github.com/ashrafic/filament-automation-bridge/issues",
+        "source": "https://github.com/ashrafic/filament-automation-bridge"
     },
     "require": {
         "php": "^8.2",
@@ -36,21 +37,21 @@
     },
     "autoload": {
         "psr-4": {
-            "Ashrafic\\FilamentWebhookBridge\\": "src/"
+            "Ashrafic\\FilamentAutomationBridge\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Ashrafic\\FilamentWebhookBridge\\Tests\\": "tests/"
+            "Ashrafic\\FilamentAutomationBridge\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Ashrafic\\FilamentWebhookBridge\\FilamentWebhookBridgeServiceProvider"
+                "Ashrafic\\FilamentAutomationBridge\\FilamentAutomationBridgeServiceProvider"
             ],
             "aliases": {
-                "WebhookBridge": "Ashrafic\\FilamentWebhookBridge\\Facades\\WebhookBridge"
+                "AutomationBridge": "Ashrafic\\FilamentAutomationBridge\\Facades\\AutomationBridge"
             }
         }
     },

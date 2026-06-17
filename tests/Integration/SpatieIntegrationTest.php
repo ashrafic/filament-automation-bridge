@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Integration;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Integration;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -20,9 +20,9 @@ use Spatie\WebhookServer\Events\WebhookCallSucceededEvent;
 
 class SpatieIntegrationTest extends TestCase
 {
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Spatie Test Trigger',
             'model_class' => TestUser::class,
             'event' => EventEnum::Created,
@@ -32,13 +32,13 @@ class SpatieIntegrationTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ], $overrides));
     }
 
-    public function test_it_creates_webhook_call_with_correct_config(): void
+    public function test_it_creates_automation_call_with_correct_config(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.sandbox_mode', true);
 
         $trigger = $this->createTrigger([
             'destination_url' => 'https://example.com/webhook',
@@ -51,7 +51,7 @@ class SpatieIntegrationTest extends TestCase
         $delivery = $deliveryService->dispatch($trigger, $user, EventEnum::Created);
 
         $this->assertNotNull($delivery);
-        $this->assertInstanceOf(WebhookDelivery::class, $delivery);
+        $this->assertInstanceOf(AutomationDelivery::class, $delivery);
         $this->assertSame($trigger->id, $delivery->trigger_id);
         $this->assertSame(TestUser::class, $delivery->model_type);
         $this->assertSame($user->id, $delivery->model_id);
@@ -65,8 +65,8 @@ class SpatieIntegrationTest extends TestCase
 
     public function test_it_uses_dedicated_queue(): void
     {
-        Config::set('filament-webhook-bridge.sandbox_mode', true);
-        Config::set('filament-webhook-bridge.queue.queue_name', 'webhooks');
+        Config::set('filament-automation-bridge.sandbox_mode', true);
+        Config::set('filament-automation-bridge.queue.queue_name', 'webhooks');
 
         $trigger = $this->createTrigger();
         $user = TestUser::create(['name' => 'Queue Test', 'email' => 'queue@example.com']);
@@ -84,7 +84,7 @@ class SpatieIntegrationTest extends TestCase
             'destination_url' => 'https://example.com/webhook',
         ]);
 
-        $delivery = WebhookDelivery::create([
+        $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => TestUser::class,
             'model_id' => 1,
@@ -103,7 +103,7 @@ class SpatieIntegrationTest extends TestCase
             payload: ['event' => 'created'],
             headers: [],
             meta: [],
-            tags: ['webhook-bridge', 'delivery:'.$delivery->uuid],
+            tags: ['automation-bridge', 'delivery:'.$delivery->uuid],
             attempt: 1,
             response: $response,
             errorType: null,
@@ -125,7 +125,7 @@ class SpatieIntegrationTest extends TestCase
             'destination_url' => 'https://example.com/webhook',
         ]);
 
-        $delivery = WebhookDelivery::create([
+        $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => TestUser::class,
             'model_id' => 1,
@@ -142,7 +142,7 @@ class SpatieIntegrationTest extends TestCase
             payload: ['event' => 'created'],
             headers: [],
             meta: [],
-            tags: ['webhook-bridge', 'delivery:'.$delivery->uuid],
+            tags: ['automation-bridge', 'delivery:'.$delivery->uuid],
             attempt: 1,
             response: null,
             errorType: 'ConnectionError',

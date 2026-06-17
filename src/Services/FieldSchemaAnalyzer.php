@@ -1,6 +1,6 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,13 +19,13 @@ class FieldSchemaAnalyzer
 {
     public function analyze(string $modelClass, ?int $maxDepth = null, array $visited = []): array
     {
-        $maxDepth = $maxDepth ?? config('filament-webhook-bridge.field_schema.max_relation_depth', 3);
+        $maxDepth = $maxDepth ?? config('filament-automation-bridge.field_schema.max_relation_depth', 3);
 
-        $cacheKey = "webhook_bridge.field_schema.{$modelClass}.{$maxDepth}";
+        $cacheKey = "automation_bridge.field_schema.{$modelClass}.{$maxDepth}";
 
         return Cache::remember(
             $cacheKey,
-            config('filament-webhook-bridge.field_schema.cache_ttl', 3600),
+            config('filament-automation-bridge.field_schema.cache_ttl', 3600),
             fn () => $this->buildSchema($modelClass, $maxDepth, $visited)
         );
     }
@@ -50,7 +50,7 @@ class FieldSchemaAnalyzer
             return [];
         }
 
-        $excluded = config('filament-webhook-bridge.field_schema.excluded_attributes', [
+        $excluded = config('filament-automation-bridge.field_schema.excluded_attributes', [
             'password',
             'remember_token',
             'api_token',

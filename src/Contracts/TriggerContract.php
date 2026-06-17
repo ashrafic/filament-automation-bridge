@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Contracts;
+namespace Ashrafic\FilamentAutomationBridge\Contracts;
 
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Illuminate\Database\Eloquent\Model;
 
 interface TriggerContract
@@ -28,15 +28,15 @@ interface TriggerContract
     /** Default configuration values */
     public static function defaultConfig(): array;
 
-    /** Determine if this trigger should fire the webhook */
+    /** Determine if this trigger should fire */
     public function shouldFire(Model $model, array $config, array $context = []): bool;
 
     /** Extra context data to make available in the payload for this trigger */
     public function getContextData(Model $model, array $config): array;
 
     /** Register event listeners for this trigger type (called when trigger is activated). Return the cleanup callable. */
-    public function subscribe(WebhookTrigger $trigger): ?\Closure;
+    public function subscribe(AutomationTrigger $trigger): ?\Closure;
 
     /** Called when trigger is deactivated or deleted to clean up listeners */
-    public function unsubscribe(WebhookTrigger $trigger): void;
+    public function unsubscribe(AutomationTrigger $trigger): void;
 }

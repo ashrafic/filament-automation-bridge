@@ -1,19 +1,19 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Feature;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Feature;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
 use Illuminate\Database\QueryException;
 
-class WebhookTriggerResourceTest extends FilamentTestCase
+class AutomationTriggerResourceTest extends FilamentTestCase
 {
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Test Trigger',
             'model_class' => TestUser::class,
             'event' => EventEnum::Created,
@@ -32,7 +32,7 @@ class WebhookTriggerResourceTest extends FilamentTestCase
             'destination_url' => 'https://example.com/hook',
         ]);
 
-        $this->assertDatabaseHas('webhook_triggers', [
+        $this->assertDatabaseHas('automation_triggers', [
             'id' => $trigger->id,
             'name' => 'New Trigger',
             'model_class' => TestUser::class,
@@ -47,7 +47,7 @@ class WebhookTriggerResourceTest extends FilamentTestCase
     {
         $this->expectException(QueryException::class);
 
-        WebhookTrigger::create([
+        AutomationTrigger::create([
             'description' => 'Missing required fields',
         ]);
     }
@@ -61,7 +61,7 @@ class WebhookTriggerResourceTest extends FilamentTestCase
             'destination_url' => 'https://updated.example.com/webhook',
         ]);
 
-        $this->assertDatabaseHas('webhook_triggers', [
+        $this->assertDatabaseHas('automation_triggers', [
             'id' => $trigger->id,
             'name' => 'Updated Trigger',
             'destination_url' => 'https://updated.example.com/webhook',
@@ -75,7 +75,7 @@ class WebhookTriggerResourceTest extends FilamentTestCase
 
         $trigger->delete();
 
-        $this->assertDatabaseMissing('webhook_triggers', [
+        $this->assertDatabaseMissing('automation_triggers', [
             'id' => $triggerId,
         ]);
     }
@@ -86,14 +86,14 @@ class WebhookTriggerResourceTest extends FilamentTestCase
 
         $trigger->update(['active' => false]);
 
-        $this->assertDatabaseHas('webhook_triggers', [
+        $this->assertDatabaseHas('automation_triggers', [
             'id' => $trigger->id,
             'active' => false,
         ]);
 
         $trigger->update(['active' => true]);
 
-        $this->assertDatabaseHas('webhook_triggers', [
+        $this->assertDatabaseHas('automation_triggers', [
             'id' => $trigger->id,
             'active' => true,
         ]);
@@ -106,27 +106,27 @@ class WebhookTriggerResourceTest extends FilamentTestCase
         $replica = $trigger->replicate();
         $replica->name = $trigger->name.' (Copy)';
         $replica->active = false;
-        $replica->secret = WebhookTrigger::generateSecret();
+        $replica->secret = AutomationTrigger::generateSecret();
         $replica->save();
 
-        $this->assertDatabaseHas('webhook_triggers', [
+        $this->assertDatabaseHas('automation_triggers', [
             'name' => 'Original Trigger (Copy)',
             'active' => false,
         ]);
 
-        $this->assertDatabaseHas('webhook_triggers', [
+        $this->assertDatabaseHas('automation_triggers', [
             'id' => $trigger->id,
             'name' => 'Original Trigger',
         ]);
 
-        $this->assertCount(2, WebhookTrigger::all());
+        $this->assertCount(2, AutomationTrigger::all());
     }
 
     public function test_it_auto_generates_secret_when_blank(): void
     {
         $trigger = $this->createTrigger(['secret' => null]);
 
-        $autoSecret = WebhookTrigger::generateSecret();
+        $autoSecret = AutomationTrigger::generateSecret();
         $trigger->update(['secret' => $autoSecret]);
 
         $this->assertNotNull($trigger->fresh()->secret);

@@ -1,6 +1,6 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Exceptions;
+namespace Ashrafic\FilamentAutomationBridge\Exceptions;
 
 class ModelNotFoundException extends \RuntimeException
 {

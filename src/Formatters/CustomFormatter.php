@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Formatters;
+namespace Ashrafic\FilamentAutomationBridge\Formatters;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\PayloadFormatter;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Contracts\PayloadFormatter;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
 
 class CustomFormatter implements PayloadFormatter
 {

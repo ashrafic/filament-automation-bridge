@@ -1,6 +1,6 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Contracts;
+namespace Ashrafic\FilamentAutomationBridge\Contracts;
 
 interface ConditionOperator
 {

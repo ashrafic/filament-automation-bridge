@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Exceptions\InvalidPayloadException;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\PayloadBuilder;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrder;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestOrderItem;
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\TestUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Exceptions\InvalidPayloadException;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\PayloadBuilder;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestOrder;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestOrderItem;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\TestUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
 class PayloadBuilderTest extends TestCase
 {
@@ -23,9 +23,9 @@ class PayloadBuilderTest extends TestCase
         $this->builder = $this->app->make(PayloadBuilder::class);
     }
 
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Test Trigger',
             'model_class' => TestUser::class,
             'event' => EventEnum::Created,
@@ -35,7 +35,7 @@ class PayloadBuilderTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ], $overrides));
     }
 
@@ -73,7 +73,7 @@ class PayloadBuilderTest extends TestCase
             'event' => 'created',
             'model' => TestUser::class,
             'triggered_at' => '2025-01-01T00:00:00Z',
-            'webhook_id' => 1,
+            'automation_id' => 1,
             'data' => ['name' => 'John'],
         ];
 
@@ -82,7 +82,7 @@ class PayloadBuilderTest extends TestCase
         $this->assertArrayHasKey('event', $result);
         $this->assertArrayHasKey('name', $result);
         $this->assertArrayHasKey('triggered_at', $result);
-        $this->assertArrayHasKey('webhook_id', $result);
+        $this->assertArrayHasKey('automation_id', $result);
     }
 
     public function test_format_for_make_destination(): void
@@ -91,7 +91,7 @@ class PayloadBuilderTest extends TestCase
             'event' => 'created',
             'model' => TestUser::class,
             'triggered_at' => '2025-01-01T00:00:00Z',
-            'webhook_id' => 1,
+            'automation_id' => 1,
             'data' => ['name' => 'John'],
         ];
 
@@ -106,7 +106,7 @@ class PayloadBuilderTest extends TestCase
             'event' => 'created',
             'model' => TestUser::class,
             'triggered_at' => '2025-01-01T00:00:00Z',
-            'webhook_id' => 1,
+            'automation_id' => 1,
             'data' => ['name' => 'John'],
         ];
 
@@ -121,7 +121,7 @@ class PayloadBuilderTest extends TestCase
             'event' => 'created',
             'model' => TestUser::class,
             'triggered_at' => '2025-01-01T00:00:00Z',
-            'webhook_id' => 1,
+            'automation_id' => 1,
             'data' => ['name' => 'John'],
         ];
 

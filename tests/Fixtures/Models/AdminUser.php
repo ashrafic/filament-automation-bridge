@@ -1,6 +1,6 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;

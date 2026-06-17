@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Contracts\PayloadFormatter;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Exceptions\InvalidPayloadException;
-use Ashrafic\FilamentWebhookBridge\Formatters\CustomFormatter;
-use Ashrafic\FilamentWebhookBridge\Formatters\MakeFormatter;
-use Ashrafic\FilamentWebhookBridge\Formatters\N8nFormatter;
-use Ashrafic\FilamentWebhookBridge\Formatters\ZapierFormatter;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Contracts\PayloadFormatter;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Exceptions\InvalidPayloadException;
+use Ashrafic\FilamentAutomationBridge\Formatters\CustomFormatter;
+use Ashrafic\FilamentAutomationBridge\Formatters\MakeFormatter;
+use Ashrafic\FilamentAutomationBridge\Formatters\N8nFormatter;
+use Ashrafic\FilamentAutomationBridge\Formatters\ZapierFormatter;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +24,7 @@ class PayloadBuilder
         private FieldSchemaAnalyzer $schemaAnalyzer,
     ) {}
 
-    public function build(WebhookTrigger $trigger, Model $model): array
+    public function build(AutomationTrigger $trigger, Model $model): array
     {
         $payloadMode = $trigger->payload_mode;
 
@@ -42,7 +42,7 @@ class PayloadBuilder
             'event' => $trigger->event->value,
             'model' => get_class($model),
             'triggered_at' => now()->toIso8601String(),
-            'webhook_id' => $trigger->id,
+            'automation_id' => $trigger->id,
             'data' => $data,
         ];
 
@@ -51,7 +51,7 @@ class PayloadBuilder
         return $envelope;
     }
 
-    public function buildSample(WebhookTrigger $trigger): array
+    public function buildSample(AutomationTrigger $trigger): array
     {
         $modelClass = $trigger->model_class;
 
@@ -67,7 +67,7 @@ class PayloadBuilder
             'event' => $trigger->event->value,
             'model' => $modelClass,
             'triggered_at' => now()->toIso8601String(),
-            'webhook_id' => $trigger->id,
+            'automation_id' => $trigger->id,
             'data' => $sampleData,
         ];
     }
@@ -116,7 +116,7 @@ class PayloadBuilder
         $metadata = [
             'event' => $payload['event'] ?? '',
             'triggered_at' => $payload['triggered_at'] ?? '',
-            'webhook_id' => $payload['webhook_id'] ?? '',
+            'automation_id' => $payload['automation_id'] ?? '',
         ];
 
         return $formatter->format($payload, $metadata);
@@ -218,7 +218,7 @@ class PayloadBuilder
     protected function extractAllAttributes(Model $model): array
     {
         $hidden = $model->getHidden();
-        $excluded = config('filament-webhook-bridge.field_schema.excluded_attributes', [
+        $excluded = config('filament-automation-bridge.field_schema.excluded_attributes', [
             'password',
             'remember_token',
             'api_token',
@@ -432,15 +432,15 @@ class PayloadBuilder
         return in_array(strtolower($columnType), $binaryTypes);
     }
 
-    protected function validatePayloadSize(array $payload, WebhookTrigger $trigger): void
+    protected function validatePayloadSize(array $payload, AutomationTrigger $trigger): void
     {
-        $maxSizeMb = config('filament-webhook-bridge.security.max_payload_size_mb', 5);
+        $maxSizeMb = config('filament-automation-bridge.security.max_payload_size_mb', 5);
         $maxSizeBytes = $maxSizeMb * 1024 * 1024;
 
         $encodedSize = strlen(json_encode($payload));
 
         if ($encodedSize > 1024 * 1024) {
-            Log::warning('Webhook payload exceeds 1MB', [
+            Log::warning('Automation payload exceeds 1MB', [
                 'trigger_id' => $trigger->id,
                 'size' => $encodedSize,
             ]);
@@ -489,7 +489,7 @@ class PayloadBuilder
     {
         $attributes = $this->schemaAnalyzer->getAttributeNames(get_class($model));
         $hidden = $model->getHidden();
-        $excluded = config('filament-webhook-bridge.field_schema.excluded_attributes', []);
+        $excluded = config('filament-automation-bridge.field_schema.excluded_attributes', []);
 
         $data = [];
 
@@ -559,7 +559,7 @@ class PayloadBuilder
 
     protected function resolveFormatter(DestinationType $destinationType): ?PayloadFormatter
     {
-        $formatters = app()->tagged('webhook-bridge.formatters');
+        $formatters = app()->tagged('automation-bridge.formatters');
 
         foreach ($formatters as $formatter) {
             if ($formatter instanceof PayloadFormatter && $formatter->destinationType() === $destinationType) {

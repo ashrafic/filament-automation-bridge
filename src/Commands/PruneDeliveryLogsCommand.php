@@ -1,27 +1,27 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Commands;
+namespace Ashrafic\FilamentAutomationBridge\Commands;
 
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Illuminate\Console\Command;
 
 class PruneDeliveryLogsCommand extends Command
 {
-    protected $signature = 'webhook-bridge:prune-logs
+    protected $signature = 'automation-bridge:prune-logs
         {--days= : Number of days to keep logs (default from config)}
         {--dry-run : Show what would be deleted without deleting}';
 
-    protected $description = 'Prune old webhook delivery logs';
+    protected $description = 'Prune old automation delivery logs';
 
     public function handle(): int
     {
         $days = $this->option('days')
             ? (int) $this->option('days')
-            : config('filament-webhook-bridge.retention.delivery_logs_days', 90);
+            : config('filament-automation-bridge.retention.delivery_logs_days', 90);
 
         $cutoff = now()->subDays($days);
 
-        $query = WebhookDelivery::where('created_at', '<', $cutoff);
+        $query = AutomationDelivery::where('created_at', '<', $cutoff);
 
         $count = $query->count();
 

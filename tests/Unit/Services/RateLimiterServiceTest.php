@@ -1,10 +1,10 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Exceptions\DeliveryFailedException;
-use Ashrafic\FilamentWebhookBridge\Services\RateLimiterService;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Exceptions\DeliveryFailedException;
+use Ashrafic\FilamentAutomationBridge\Services\RateLimiterService;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
 class RateLimiterServiceTest extends TestCase
 {
@@ -25,7 +25,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function test_blocks_requests_exceeding_limit(): void
     {
-        config(['filament-webhook-bridge.rate_limiting.max_requests_per_minute' => 2]);
+        config(['filament-automation-bridge.rate_limiting.max_requests_per_minute' => 2]);
 
         $this->service->throttle('https://example.com/webhook');
         $this->service->throttle('https://example.com/webhook');
@@ -41,7 +41,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function test_is_limited_returns_true_after_exhausting_limit(): void
     {
-        config(['filament-webhook-bridge.rate_limiting.max_requests_per_minute' => 1]);
+        config(['filament-automation-bridge.rate_limiting.max_requests_per_minute' => 1]);
 
         $this->service->throttle('https://example.com/webhook');
 
@@ -71,7 +71,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function test_clears_rate_limiter_for_hostname(): void
     {
-        config(['filament-webhook-bridge.rate_limiting.max_requests_per_minute' => 1]);
+        config(['filament-automation-bridge.rate_limiting.max_requests_per_minute' => 1]);
 
         $this->service->throttle('https://example.com/webhook');
         $this->assertTrue($this->service->isLimited('https://example.com/webhook'));
@@ -82,7 +82,7 @@ class RateLimiterServiceTest extends TestCase
 
     public function test_different_hosts_tracked_separately(): void
     {
-        config(['filament-webhook-bridge.rate_limiting.max_requests_per_minute' => 1]);
+        config(['filament-automation-bridge.rate_limiting.max_requests_per_minute' => 1]);
 
         $this->service->throttle('https://example.com/webhook');
         $this->assertTrue($this->service->isLimited('https://example.com/webhook'));

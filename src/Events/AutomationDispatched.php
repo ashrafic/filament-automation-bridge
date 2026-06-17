@@ -2,16 +2,15 @@
 
 namespace Ashrafic\FilamentAutomationBridge\Events;
 
-use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class TriggerChanged
+class AutomationDispatched
 {
     use Dispatchable, SerializesModels;
 
     public function __construct(
-        public AutomationTrigger $trigger,
-        public string $action,
+        public AutomationDelivery $delivery,
     ) {}
 }

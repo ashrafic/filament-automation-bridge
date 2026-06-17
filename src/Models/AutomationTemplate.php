@@ -1,15 +1,15 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Models;
+namespace Ashrafic\FilamentAutomationBridge\Models;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
 use Illuminate\Database\Eloquent\Model;
 
-class WebhookTemplate extends Model
+class AutomationTemplate extends Model
 {
-    protected $table = 'webhook_templates';
+    protected $table = 'automation_templates';
 
     protected $fillable = [
         'name',
@@ -34,7 +34,7 @@ class WebhookTemplate extends Model
         'payload_mode' => PayloadMode::class,
     ];
 
-    public function toTrigger(array $overrides = []): WebhookTrigger
+    public function toTrigger(array $overrides = []): AutomationTrigger
     {
         $defaults = [
             'name' => $this->name,
@@ -48,6 +48,6 @@ class WebhookTemplate extends Model
             'conditions' => $this->conditions,
         ];
 
-        return new WebhookTrigger(array_merge($defaults, $overrides));
+        return new AutomationTrigger(array_merge($defaults, $overrides));
     }
 }

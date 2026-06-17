@@ -1,14 +1,14 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Events\HistoricalSyncCompleted;
-use Ashrafic\FilamentWebhookBridge\Jobs\ProcessHistoricalSyncBatch;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Events\HistoricalSyncCompleted;
+use Ashrafic\FilamentAutomationBridge\Jobs\ProcessHistoricalSyncBatch;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -20,11 +20,11 @@ class HistoricalSyncService
         private ConditionEvaluator $conditionEvaluator,
     ) {}
 
-    public function startSync(WebhookTrigger $trigger, bool $applyConditions = true, int $batchSize = 100, int $delaySeconds = 1): string
+    public function startSync(AutomationTrigger $trigger, bool $applyConditions = true, int $batchSize = 100, int $delaySeconds = 1): string
     {
-        $maxBatchSize = config('filament-webhook-bridge.historical_sync.max_batch_size', 1000);
-        $configuredBatchSize = config('filament-webhook-bridge.historical_sync.batch_size', 100);
-        $configuredDelay = config('filament-webhook-bridge.historical_sync.batch_delay_seconds', 1);
+        $maxBatchSize = config('filament-automation-bridge.historical_sync.max_batch_size', 1000);
+        $configuredBatchSize = config('filament-automation-bridge.historical_sync.batch_size', 100);
+        $configuredDelay = config('filament-automation-bridge.historical_sync.batch_delay_seconds', 1);
 
         if ($batchSize <= 0) {
             $batchSize = $configuredBatchSize;
@@ -44,7 +44,7 @@ class HistoricalSyncService
             throw new \InvalidArgumentException("Model class [{$modelClass}] does not exist.");
         }
 
-        $lockKey = "webhook_bridge.sync.lock.{$trigger->id}";
+        $lockKey = "automation_bridge.sync.lock.{$trigger->id}";
 
         if (Cache::lock($lockKey, 300)->get()) {
             try {
@@ -59,7 +59,7 @@ class HistoricalSyncService
 
     public function getProgress(string $batchUuid): array
     {
-        $data = Cache::get("webhook_bridge.sync.{$batchUuid}");
+        $data = Cache::get("automation_bridge.sync.{$batchUuid}");
 
         if ($data === null) {
             return [
@@ -73,8 +73,8 @@ class HistoricalSyncService
         }
 
         $remaining = $data['total'] - $data['processed'];
-        $delaySeconds = config('filament-webhook-bridge.historical_sync.batch_delay_seconds', 1);
-        $etaSeconds = $remaining > 0 ? (int) ceil($remaining / config('filament-webhook-bridge.historical_sync.batch_size', 100)) * $delaySeconds : 0;
+        $delaySeconds = config('filament-automation-bridge.historical_sync.batch_delay_seconds', 1);
+        $etaSeconds = $remaining > 0 ? (int) ceil($remaining / config('filament-automation-bridge.historical_sync.batch_size', 100)) * $delaySeconds : 0;
 
         return [
             'total' => $data['total'],
@@ -88,7 +88,7 @@ class HistoricalSyncService
 
     public function cancelSync(string $batchUuid): bool
     {
-        $data = Cache::get("webhook_bridge.sync.{$batchUuid}");
+        $data = Cache::get("automation_bridge.sync.{$batchUuid}");
 
         if ($data === null) {
             return false;
@@ -99,7 +99,7 @@ class HistoricalSyncService
         }
 
         $data['status'] = 'cancelled';
-        Cache::put("webhook_bridge.sync.{$batchUuid}", $data, now()->addDays(7));
+        Cache::put("automation_bridge.sync.{$batchUuid}", $data, now()->addDays(7));
 
         Log::info('Historical sync cancelled', [
             'batch_uuid' => $batchUuid,
@@ -109,9 +109,9 @@ class HistoricalSyncService
         return true;
     }
 
-    public function processBatch(string $batchUuid, WebhookTrigger $trigger, array $modelIds, bool $applyConditions): array
+    public function processBatch(string $batchUuid, AutomationTrigger $trigger, array $modelIds, bool $applyConditions): array
     {
-        $data = Cache::get("webhook_bridge.sync.{$batchUuid}");
+        $data = Cache::get("automation_bridge.sync.{$batchUuid}");
 
         if ($data === null) {
             return ['processed' => 0, 'successful' => 0, 'failed' => 0];
@@ -121,7 +121,7 @@ class HistoricalSyncService
             return ['processed' => 0, 'successful' => 0, 'failed' => 0];
         }
 
-        $freshTrigger = WebhookTrigger::find($trigger->id);
+        $freshTrigger = AutomationTrigger::find($trigger->id);
 
         if ($freshTrigger === null || ! $freshTrigger->active) {
             $this->markSyncCompleted($batchUuid, $data, 'cancelled');
@@ -160,7 +160,7 @@ class HistoricalSyncService
 
         foreach ($models as $model) {
             try {
-                $currentData = Cache::get("webhook_bridge.sync.{$batchUuid}");
+                $currentData = Cache::get("automation_bridge.sync.{$batchUuid}");
 
                 if ($currentData !== null && ($currentData['status'] ?? null) === 'cancelled') {
                     break;
@@ -183,7 +183,7 @@ class HistoricalSyncService
 
                 $payload = $this->payloadBuilder->build($trigger, $model);
 
-                WebhookDelivery::create([
+                AutomationDelivery::create([
                     'trigger_id' => $trigger->id,
                     'model_type' => get_class($model),
                     'model_id' => $model->getKey(),
@@ -221,13 +221,13 @@ class HistoricalSyncService
         ];
     }
 
-    protected function executeSync(WebhookTrigger $trigger, bool $applyConditions, int $batchSize, int $delaySeconds, string $modelClass): string
+    protected function executeSync(AutomationTrigger $trigger, bool $applyConditions, int $batchSize, int $delaySeconds, string $modelClass): string
     {
         $batchUuid = Str::uuid()->toString();
 
         $total = $modelClass::count();
 
-        Cache::put("webhook_bridge.sync.{$batchUuid}", [
+        Cache::put("automation_bridge.sync.{$batchUuid}", [
             'status' => 'in_progress',
             'total' => $total,
             'processed' => 0,
@@ -238,7 +238,7 @@ class HistoricalSyncService
         ], now()->addDays(7));
 
         if ($total === 0) {
-            $this->markSyncCompleted($batchUuid, Cache::get("webhook_bridge.sync.{$batchUuid}"), 'completed');
+            $this->markSyncCompleted($batchUuid, Cache::get("automation_bridge.sync.{$batchUuid}"), 'completed');
 
             return $batchUuid;
         }
@@ -258,7 +258,7 @@ class HistoricalSyncService
         return $batchUuid;
     }
 
-    protected function extractEagerLoadRelations(WebhookTrigger $trigger): array
+    protected function extractEagerLoadRelations(AutomationTrigger $trigger): array
     {
         $fieldMapping = $trigger->field_mapping ?? [];
 
@@ -302,16 +302,16 @@ class HistoricalSyncService
 
     protected function incrementProgress(string $batchUuid, string $field): void
     {
-        $lock = Cache::lock("webhook_bridge.sync.progress_lock.{$batchUuid}", 10);
+        $lock = Cache::lock("automation_bridge.sync.progress_lock.{$batchUuid}", 10);
 
         try {
             $lock->block(5);
 
-            $data = Cache::get("webhook_bridge.sync.{$batchUuid}");
+            $data = Cache::get("automation_bridge.sync.{$batchUuid}");
 
             if ($data !== null) {
                 $data[$field] = ($data[$field] ?? 0) + 1;
-                Cache::put("webhook_bridge.sync.{$batchUuid}", $data, now()->addDays(7));
+                Cache::put("automation_bridge.sync.{$batchUuid}", $data, now()->addDays(7));
             }
         } finally {
             optional($lock)->release();
@@ -320,7 +320,7 @@ class HistoricalSyncService
 
     protected function checkAndMarkCompleted(string $batchUuid): void
     {
-        $data = Cache::get("webhook_bridge.sync.{$batchUuid}");
+        $data = Cache::get("automation_bridge.sync.{$batchUuid}");
 
         if ($data === null) {
             return;
@@ -334,7 +334,7 @@ class HistoricalSyncService
     protected function markSyncCompleted(string $batchUuid, array $data, string $status): void
     {
         $data['status'] = $status;
-        Cache::put("webhook_bridge.sync.{$batchUuid}", $data, now()->addDays(7));
+        Cache::put("automation_bridge.sync.{$batchUuid}", $data, now()->addDays(7));
 
         if ($status === 'completed') {
             event(new HistoricalSyncCompleted(

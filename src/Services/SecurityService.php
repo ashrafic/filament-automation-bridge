@@ -1,10 +1,10 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Exceptions\SecurityException;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
+use Ashrafic\FilamentAutomationBridge\Exceptions\SecurityException;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -24,8 +24,8 @@ class SecurityService
         );
 
         return [
-            'X-Webhook-Signature' => 'sha256='.$signature,
-            'X-Webhook-Timestamp' => (string) $timestamp,
+            'X-Automation-Signature' => 'sha256='.$signature,
+            'X-Automation-Timestamp' => (string) $timestamp,
         ];
     }
 
@@ -42,13 +42,13 @@ class SecurityService
         }
 
         $scheme = strtolower($parsed['scheme']);
-        $allowedSchemes = config('filament-webhook-bridge.security.allowed_schemes', ['https', 'http']);
+        $allowedSchemes = config('filament-automation-bridge.security.allowed_schemes', ['https', 'http']);
 
         if (! in_array($scheme, $allowedSchemes)) {
             throw new SecurityException("URL scheme '{$scheme}' is not allowed.");
         }
 
-        if (config('filament-webhook-bridge.security.require_https_in_production', true)
+        if (config('filament-automation-bridge.security.require_https_in_production', true)
             && app()->environment('production')
             && $scheme === 'http'
         ) {
@@ -86,7 +86,7 @@ class SecurityService
             return true;
         }
 
-        $blockedRanges = config('filament-webhook-bridge.security.blocked_ip_ranges', [
+        $blockedRanges = config('filament-automation-bridge.security.blocked_ip_ranges', [
             '127.0.0.0/8',
             '10.0.0.0/8',
             '172.16.0.0/12',
@@ -120,17 +120,17 @@ class SecurityService
         return $payload;
     }
 
-    public function buildHeaders(WebhookTrigger $trigger, WebhookDelivery $delivery): array
+    public function buildHeaders(AutomationTrigger $trigger, AutomationDelivery $delivery): array
     {
         $payload = $delivery->payload ?? [];
         $signHeaders = $this->sign($payload, $trigger->secret);
 
         $headers = [
             'Content-Type' => 'application/json',
-            'User-Agent' => 'Filament-Webhook-Bridge/1.0 (Laravel)',
-            'X-Webhook-Trigger-Id' => (string) $trigger->id,
-            'X-Webhook-Delivery-Id' => (string) $delivery->id,
-            'X-Webhook-Attempt' => (string) ($delivery->retry_count + 1),
+            'User-Agent' => 'Filament-Automation-Bridge/1.0 (Laravel)',
+            'X-Automation-Trigger-Id' => (string) $trigger->id,
+            'X-Automation-Delivery-Id' => (string) $delivery->id,
+            'X-Automation-Attempt' => (string) ($delivery->retry_count + 1),
             'Accept' => 'application/json',
         ];
 

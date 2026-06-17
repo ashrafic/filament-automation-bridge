@@ -1,12 +1,12 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Filament\Components;
+namespace Ashrafic\FilamentAutomationBridge\Filament\Components;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\DeliveryService;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -20,7 +20,7 @@ class TestConnectionAction
             ->icon('heroicon-o-signal')
             ->color('warning')
             ->requiresConfirmation()
-            ->modalHeading('Test Webhook Connection')
+            ->modalHeading('Test Connection')
             ->modalDescription('This will send a test request to the configured destination URL using sample data. No record will be saved.')
             ->action(function (Get $get) {
                 $modelClass = $get('model_class');
@@ -36,7 +36,7 @@ class TestConnectionAction
                     return;
                 }
 
-                $trigger = new WebhookTrigger;
+                $trigger = new AutomationTrigger;
                 $trigger->model_class = $modelClass;
                 $trigger->event = EventEnum::tryFrom($get('event') ?? 'created') ?? EventEnum::Created;
                 $trigger->destination_type = DestinationType::tryFrom($get('destination_type') ?? 'custom') ?? DestinationType::Custom;
@@ -45,7 +45,7 @@ class TestConnectionAction
                 $trigger->field_mapping = $get('field_mapping') ?? [];
                 $trigger->custom_payload_template = $get('custom_payload_template') ?? '';
                 $trigger->secret = $get('secret') ?? '';
-                $trigger->webhook_timeout = $get('webhook_timeout') ?? 30;
+                $trigger->request_timeout = $get('request_timeout') ?? 30;
                 $trigger->max_retries = 0;
                 $trigger->id = 0;
 

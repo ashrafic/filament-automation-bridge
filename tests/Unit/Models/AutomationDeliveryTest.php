@@ -1,21 +1,21 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Models;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Models;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliverySource;
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
-class WebhookDeliveryTest extends TestCase
+class AutomationDeliveryTest extends TestCase
 {
-    protected function createTrigger(array $overrides = []): WebhookTrigger
+    protected function createTrigger(array $overrides = []): AutomationTrigger
     {
-        return WebhookTrigger::create(array_merge([
+        return AutomationTrigger::create(array_merge([
             'name' => 'Test Trigger',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
@@ -25,18 +25,18 @@ class WebhookDeliveryTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ], $overrides));
     }
 
-    protected function createDelivery(array $overrides = []): WebhookDelivery
+    protected function createDelivery(array $overrides = []): AutomationDelivery
     {
         $trigger = $overrides['trigger_id'] ?? null;
-        if (! $trigger instanceof WebhookTrigger) {
+        if (! $trigger instanceof AutomationTrigger) {
             $trigger = $this->createTrigger();
         }
 
-        return WebhookDelivery::create(array_merge([
+        return AutomationDelivery::create(array_merge([
             'trigger_id' => $trigger->id,
             'model_type' => 'App\\Models\\User',
             'model_id' => 1,
@@ -70,7 +70,7 @@ class WebhookDeliveryTest extends TestCase
         $trigger = $this->createTrigger();
         $delivery = $this->createDelivery(['trigger_id' => $trigger->id]);
 
-        $this->assertInstanceOf(WebhookTrigger::class, $delivery->trigger);
+        $this->assertInstanceOf(AutomationTrigger::class, $delivery->trigger);
         $this->assertSame($trigger->id, $delivery->trigger->id);
     }
 

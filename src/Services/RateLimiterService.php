@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Services;
+namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentWebhookBridge\Exceptions\DeliveryFailedException;
+use Ashrafic\FilamentAutomationBridge\Exceptions\DeliveryFailedException;
 use Illuminate\Support\Facades\RateLimiter;
 
 class RateLimiterService
@@ -10,8 +10,8 @@ class RateLimiterService
     public function throttle(string $destinationUrl): void
     {
         $hostname = $this->getHostname($destinationUrl);
-        $key = "webhook-bridge:{$hostname}";
-        $maxRequestsPerMinute = config('filament-webhook-bridge.rate_limiting.max_requests_per_minute', 60);
+        $key = "automation-bridge:{$hostname}";
+        $maxRequestsPerMinute = config('filament-automation-bridge.rate_limiting.max_requests_per_minute', 60);
 
         if (RateLimiter::tooManyAttempts($key, $maxRequestsPerMinute)) {
             throw new DeliveryFailedException("Rate limit exceeded for host: {$hostname}. Please retry later.");
@@ -23,8 +23,8 @@ class RateLimiterService
     public function isLimited(string $destinationUrl): bool
     {
         $hostname = $this->getHostname($destinationUrl);
-        $key = "webhook-bridge:{$hostname}";
-        $maxRequestsPerMinute = config('filament-webhook-bridge.rate_limiting.max_requests_per_minute', 60);
+        $key = "automation-bridge:{$hostname}";
+        $maxRequestsPerMinute = config('filament-automation-bridge.rate_limiting.max_requests_per_minute', 60);
 
         return RateLimiter::tooManyAttempts($key, $maxRequestsPerMinute);
     }
@@ -42,7 +42,7 @@ class RateLimiterService
 
     public function clear(string $hostname): void
     {
-        $key = "webhook-bridge:{$hostname}";
+        $key = "automation-bridge:{$hostname}";
 
         RateLimiter::clear($key);
     }

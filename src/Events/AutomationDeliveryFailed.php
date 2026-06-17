@@ -1,17 +1,17 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Events;
+namespace Ashrafic\FilamentAutomationBridge\Events;
 
-use Ashrafic\FilamentWebhookBridge\Models\WebhookDelivery;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class WebhookDeliveryFailed
+class AutomationDeliveryFailed
 {
     use Dispatchable, SerializesModels;
 
     public function __construct(
-        public WebhookDelivery $delivery,
+        public AutomationDelivery $delivery,
         public string $errorMessage,
     ) {}
 }

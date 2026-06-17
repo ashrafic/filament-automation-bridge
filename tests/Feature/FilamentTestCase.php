@@ -1,9 +1,9 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Feature;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Feature;
 
-use Ashrafic\FilamentWebhookBridge\Tests\Fixtures\Models\AdminUser;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Tests\Fixtures\Models\AdminUser;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 use Illuminate\Support\Facades\Gate;
 
 class FilamentTestCase extends TestCase

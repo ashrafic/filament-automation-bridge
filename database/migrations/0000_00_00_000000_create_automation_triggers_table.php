@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('webhook_triggers', function (Blueprint $table) {
+        Schema::create('automation_triggers', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
             $table->text('description')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->json('conditions')->nullable();
             $table->text('secret')->nullable();
             $table->boolean('active')->default(true);
-            $table->unsignedInteger('webhook_timeout')->default(5);
+            $table->unsignedInteger('request_timeout')->default(5);
             $table->unsignedInteger('max_retries')->default(3);
             $table->json('ip_whitelist')->nullable();
             $table->boolean('encrypt_payload')->default(false);
@@ -37,6 +37,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('webhook_triggers');
+        Schema::dropIfExists('automation_triggers');
     }
 };

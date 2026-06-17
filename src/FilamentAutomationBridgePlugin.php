@@ -1,15 +1,15 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge;
+namespace Ashrafic\FilamentAutomationBridge;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 
-class FilamentWebhookBridgePlugin implements Plugin
+class FilamentAutomationBridgePlugin implements Plugin
 {
     public function getId(): string
     {
-        return 'filament-webhook-bridge';
+        return 'filament-automation-bridge';
     }
 
     public function register(Panel $panel): void
@@ -17,15 +17,15 @@ class FilamentWebhookBridgePlugin implements Plugin
         $panel
             ->discoverResources(
                 in: __DIR__.'/Filament/Resources',
-                for: 'Ashrafic\\FilamentWebhookBridge\\Filament\\Resources',
+                for: 'Ashrafic\\FilamentAutomationBridge\\Filament\\Resources',
             )
             ->discoverPages(
                 in: __DIR__.'/Filament/Pages',
-                for: 'Ashrafic\\FilamentWebhookBridge\\Filament\\Pages',
+                for: 'Ashrafic\\FilamentAutomationBridge\\Filament\\Pages',
             )
             ->discoverWidgets(
                 in: __DIR__.'/Filament/Widgets',
-                for: 'Ashrafic\\FilamentWebhookBridge\\Filament\\Widgets',
+                for: 'Ashrafic\\FilamentAutomationBridge\\Filament\\Widgets',
             );
     }
 

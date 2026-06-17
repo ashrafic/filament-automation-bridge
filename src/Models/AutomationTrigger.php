@@ -1,21 +1,21 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Models;
+namespace Ashrafic\FilamentAutomationBridge\Models;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DeliveryStatus;
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Triggers\TriggerManager;
+use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-class WebhookTrigger extends Model
+class AutomationTrigger extends Model
 {
-    protected $table = 'webhook_triggers';
+    protected $table = 'automation_triggers';
 
     protected $fillable = [
         'name',
@@ -32,7 +32,7 @@ class WebhookTrigger extends Model
         'conditions',
         'secret',
         'active',
-        'webhook_timeout',
+        'request_timeout',
         'max_retries',
         'ip_whitelist',
         'encrypt_payload',
@@ -46,7 +46,7 @@ class WebhookTrigger extends Model
         'trigger_config' => 'array',
         'active' => 'boolean',
         'encrypt_payload' => 'boolean',
-        'webhook_timeout' => 'integer',
+        'request_timeout' => 'integer',
         'max_retries' => 'integer',
         'event' => EventEnum::class,
         'trigger_type' => 'string',
@@ -64,7 +64,7 @@ class WebhookTrigger extends Model
 
     public function deliveries(): HasMany
     {
-        return $this->hasMany(WebhookDelivery::class, 'trigger_id');
+        return $this->hasMany(AutomationDelivery::class, 'trigger_id');
     }
 
     public function scopeActive($query)
@@ -102,7 +102,7 @@ class WebhookTrigger extends Model
     {
         static::saved(function (self $trigger) {
             if ($trigger->event !== null) {
-                Cache::forget("webhook_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
+                Cache::forget("automation_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
             }
 
             if ($trigger->trigger_type !== null && $trigger->active && ! $trigger->isTriggerType('model-event')) {
@@ -112,7 +112,7 @@ class WebhookTrigger extends Model
 
         static::deleted(function (self $trigger) {
             if ($trigger->event !== null) {
-                Cache::forget("webhook_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
+                Cache::forget("automation_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
             }
 
             if ($trigger->trigger_type !== null && ! $trigger->isTriggerType('model-event')) {

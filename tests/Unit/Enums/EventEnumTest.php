@@ -1,8 +1,8 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Enums;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Enums;
 
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use PHPUnit\Framework\TestCase;
 
 class EventEnumTest extends TestCase

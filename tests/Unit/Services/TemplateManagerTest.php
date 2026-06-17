@@ -1,14 +1,14 @@
 <?php
 
-namespace Ashrafic\FilamentWebhookBridge\Tests\Unit\Services;
+namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentWebhookBridge\Enums\DestinationType;
-use Ashrafic\FilamentWebhookBridge\Enums\EventEnum;
-use Ashrafic\FilamentWebhookBridge\Enums\PayloadMode;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTemplate;
-use Ashrafic\FilamentWebhookBridge\Models\WebhookTrigger;
-use Ashrafic\FilamentWebhookBridge\Services\TemplateManager;
-use Ashrafic\FilamentWebhookBridge\Tests\TestCase;
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
+use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTemplate;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
+use Ashrafic\FilamentAutomationBridge\Services\TemplateManager;
+use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
 class TemplateManagerTest extends TestCase
 {
@@ -24,16 +24,16 @@ class TemplateManagerTest extends TestCase
     {
         $this->manager->seedBuiltins();
 
-        $this->assertGreaterThanOrEqual(6, WebhookTemplate::where('is_builtin', true)->count());
+        $this->assertGreaterThanOrEqual(6, AutomationTemplate::where('is_builtin', true)->count());
     }
 
     public function test_seeds_builtins_idempotently(): void
     {
         $this->manager->seedBuiltins();
-        $count1 = WebhookTemplate::where('is_builtin', true)->count();
+        $count1 = AutomationTemplate::where('is_builtin', true)->count();
 
         $this->manager->seedBuiltins();
-        $count2 = WebhookTemplate::where('is_builtin', true)->count();
+        $count2 = AutomationTemplate::where('is_builtin', true)->count();
 
         $this->assertSame($count1, $count2);
     }
@@ -42,7 +42,7 @@ class TemplateManagerTest extends TestCase
     {
         $this->manager->seedBuiltins();
 
-        WebhookTemplate::create([
+        AutomationTemplate::create([
             'name' => 'Custom Template',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
@@ -72,7 +72,7 @@ class TemplateManagerTest extends TestCase
     {
         $this->manager->seedBuiltins();
 
-        WebhookTemplate::create([
+        AutomationTemplate::create([
             'name' => 'Custom Template',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
@@ -89,7 +89,7 @@ class TemplateManagerTest extends TestCase
 
     public function test_save_from_trigger_creates_template(): void
     {
-        $trigger = WebhookTrigger::create([
+        $trigger = AutomationTrigger::create([
             'name' => 'Test Trigger',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
@@ -99,12 +99,12 @@ class TemplateManagerTest extends TestCase
             'payload_mode' => PayloadMode::Summary,
             'active' => true,
             'max_retries' => 3,
-            'webhook_timeout' => 5,
+            'request_timeout' => 5,
         ]);
 
         $template = $this->manager->saveFromTrigger($trigger, 'My Saved Template', 'A description');
 
-        $this->assertInstanceOf(WebhookTemplate::class, $template);
+        $this->assertInstanceOf(AutomationTemplate::class, $template);
         $this->assertFalse($template->is_builtin);
         $this->assertSame('My Saved Template', $template->name);
         $this->assertSame('A description', $template->description);
@@ -119,7 +119,7 @@ class TemplateManagerTest extends TestCase
     {
         $this->manager->seedBuiltins();
 
-        $template = WebhookTemplate::where('is_builtin', true)->first();
+        $template = AutomationTemplate::where('is_builtin', true)->first();
         $result = $this->manager->applyTemplate($template);
 
         $this->assertArrayHasKey('name', $result);
