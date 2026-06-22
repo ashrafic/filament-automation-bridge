@@ -332,12 +332,15 @@ class AutomationTriggerResource extends Resource
                     ->badge()
                     ->color('gray')
                     ->formatStateUsing(fn ($state) => $state instanceof DestinationType ? $state->getLabel() : $state),
-                Tables\Columns\IconColumn::make('active')
-                    ->boolean()
-                    ->trueColor('success')
-                    ->falseColor('danger')
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle'),
+                Tables\Columns\ToggleColumn::make('active')
+                    ->label('Active')
+                    ->requiresConfirmation()
+                    ->afterStateUpdated(function ($state) {
+                        Notification::make()
+                            ->title($state ? 'Trigger activated' : 'Trigger deactivated')
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Columns\TextColumn::make('last_delivered_at')
                     ->label('Last Delivered')
                     ->dateTime()
@@ -402,18 +405,6 @@ class AutomationTriggerResource extends Resource
             ])
             ->actions([
                 Actions\EditAction::make(),
-                Actions\Action::make('toggle_active')
-                    ->label(fn (AutomationTrigger $record) => $record->active ? 'Deactivate' : 'Activate')
-                    ->icon(fn (AutomationTrigger $record) => $record->active ? 'heroicon-o-pause' : 'heroicon-o-play')
-                    ->requiresConfirmation()
-                    ->action(function (AutomationTrigger $record) {
-                        $record->update(['active' => ! $record->active]);
-
-                        Notification::make()
-                            ->title($record->active ? 'Trigger activated' : 'Trigger deactivated')
-                            ->success()
-                            ->send();
-                    }),
                 Actions\Action::make('duplicate')
                     ->icon('heroicon-o-document-duplicate')
                     ->requiresConfirmation()
