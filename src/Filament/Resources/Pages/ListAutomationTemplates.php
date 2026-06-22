@@ -43,9 +43,6 @@ class ListAutomationTemplates extends ListRecords
                     ->label('Event')
                     ->badge()
                     ->formatStateUsing(fn ($state) => $state->getLabel()),
-                Tables\Columns\IconColumn::make('is_builtin')
-                    ->label('Built-in')
-                    ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime()
@@ -56,8 +53,7 @@ class ListAutomationTemplates extends ListRecords
                     ->label('Use Template')
                     ->icon('heroicon-o-document-plus')
                     ->url(fn (AutomationTemplate $record) => AutomationTriggerResource::getUrl('create', ['template_id' => $record->id])),
-                Tables\Actions\DeleteAction::make()
-                    ->visible(fn (AutomationTemplate $record) => ! $record->is_builtin),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->emptyStateHeading('No templates yet')
             ->emptyStateDescription('Save a trigger configuration as a template from the Edit or View page.');

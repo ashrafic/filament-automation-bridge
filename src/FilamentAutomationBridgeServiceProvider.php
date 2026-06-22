@@ -6,7 +6,6 @@ use Ashrafic\FilamentAutomationBridge\Commands\InstallCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\ModelCacheCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\ProcessScheduledTriggersCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\PruneDeliveryLogsCommand;
-use Ashrafic\FilamentAutomationBridge\Commands\SeedTemplatesCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\SyncHistoricalRecordsCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\TestConnectionCommand;
 use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
@@ -52,7 +51,6 @@ class FilamentAutomationBridgeServiceProvider extends PackageServiceProvider
                 InstallCommand::class,
                 PruneDeliveryLogsCommand::class,
                 ModelCacheCommand::class,
-                SeedTemplatesCommand::class,
                 SyncHistoricalRecordsCommand::class,
                 TestConnectionCommand::class,
                 ProcessScheduledTriggersCommand::class,

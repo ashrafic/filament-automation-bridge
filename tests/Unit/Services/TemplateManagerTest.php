@@ -20,71 +20,30 @@ class TemplateManagerTest extends TestCase
         $this->manager = $this->app->make(TemplateManager::class);
     }
 
-    public function test_seed_builtins_creates_templates(): void
+    public function test_get_all_returns_templates_sorted_by_name(): void
     {
-        $this->manager->seedBuiltins();
-
-        $this->assertGreaterThanOrEqual(6, AutomationTemplate::where('is_builtin', true)->count());
-    }
-
-    public function test_seeds_builtins_idempotently(): void
-    {
-        $this->manager->seedBuiltins();
-        $count1 = AutomationTemplate::where('is_builtin', true)->count();
-
-        $this->manager->seedBuiltins();
-        $count2 = AutomationTemplate::where('is_builtin', true)->count();
-
-        $this->assertSame($count1, $count2);
-    }
-
-    public function test_get_all_returns_builtin_templates_first(): void
-    {
-        $this->manager->seedBuiltins();
-
         AutomationTemplate::create([
-            'name' => 'Custom Template',
+            'name' => 'Z Template',
             'model_class' => 'App\\Models\\User',
             'event' => EventEnum::Created,
             'destination_type' => DestinationType::Custom,
             'field_mapping' => ['name'],
             'payload_mode' => PayloadMode::Summary,
-            'is_builtin' => false,
         ]);
-
-        $all = $this->manager->getAll();
-
-        $this->assertTrue($all->first()->is_builtin);
-    }
-
-    public function test_get_all_returns_sorted_by_name(): void
-    {
-        $this->manager->seedBuiltins();
-
-        $all = $this->manager->getAll();
-        $builtinNames = $all->where('is_builtin', true)->pluck('name')->values();
-
-        $sorted = $builtinNames->sort()->values();
-        $this->assertSame($sorted->toArray(), $builtinNames->toArray());
-    }
-
-    public function test_get_builtins_returns_only_builtin_templates(): void
-    {
-        $this->manager->seedBuiltins();
 
         AutomationTemplate::create([
-            'name' => 'Custom Template',
+            'name' => 'A Template',
             'model_class' => 'App\\Models\\User',
-            'event' => EventEnum::Created,
+            'event' => EventEnum::Updated,
             'destination_type' => DestinationType::Custom,
-            'field_mapping' => ['name'],
+            'field_mapping' => ['email'],
             'payload_mode' => PayloadMode::Summary,
-            'is_builtin' => false,
         ]);
 
-        $builtins = $this->manager->getBuiltins();
+        $all = $this->manager->getAll();
 
-        $this->assertTrue($builtins->every(fn ($t) => $t->is_builtin === true));
+        $this->assertSame('A Template', $all->first()->name);
+        $this->assertSame('Z Template', $all->last()->name);
     }
 
     public function test_save_from_trigger_creates_template(): void
@@ -105,7 +64,6 @@ class TemplateManagerTest extends TestCase
         $template = $this->manager->saveFromTrigger($trigger, 'My Saved Template', 'A description');
 
         $this->assertInstanceOf(AutomationTemplate::class, $template);
-        $this->assertFalse($template->is_builtin);
         $this->assertSame('My Saved Template', $template->name);
         $this->assertSame('A description', $template->description);
         $this->assertSame('App\\Models\\User', $template->model_class);
@@ -115,11 +73,41 @@ class TemplateManagerTest extends TestCase
         $this->assertSame(PayloadMode::Summary, $template->payload_mode);
     }
 
+    public function test_save_from_trigger_preserves_conditions(): void
+    {
+        $trigger = AutomationTrigger::create([
+            'name' => 'Conditional Trigger',
+            'model_class' => 'App\\Models\\User',
+            'event' => EventEnum::Updated,
+            'destination_type' => DestinationType::Custom,
+            'destination_url' => 'https://example.com/hook',
+            'field_mapping' => ['name'],
+            'payload_mode' => PayloadMode::Summary,
+            'conditions' => [
+                ['field' => 'status', 'operator' => 'equals', 'value' => 'premium'],
+            ],
+            'active' => true,
+            'max_retries' => 3,
+            'request_timeout' => 5,
+        ]);
+
+        $template = $this->manager->saveFromTrigger($trigger, 'Conditional Template');
+
+        $this->assertNotNull($template->conditions);
+        $this->assertSame('status', $template->conditions[0]['field']);
+    }
+
     public function test_apply_template_returns_fillable_array(): void
     {
-        $this->manager->seedBuiltins();
+        $template = AutomationTemplate::create([
+            'name' => 'Apply Test',
+            'model_class' => 'App\\Models\\Order',
+            'event' => EventEnum::Created,
+            'destination_type' => DestinationType::Zapier,
+            'field_mapping' => ['id', 'total'],
+            'payload_mode' => PayloadMode::All,
+        ]);
 
-        $template = AutomationTemplate::where('is_builtin', true)->first();
         $result = $this->manager->applyTemplate($template);
 
         $this->assertArrayHasKey('name', $result);
@@ -131,5 +119,22 @@ class TemplateManagerTest extends TestCase
         $this->assertIsString($result['event']);
         $this->assertIsString($result['destination_type']);
         $this->assertIsString($result['payload_mode']);
+    }
+
+    public function test_apply_template_includes_custom_payload(): void
+    {
+        $template = AutomationTemplate::create([
+            'name' => 'Custom Payload Template',
+            'model_class' => 'App\\Models\\User',
+            'event' => EventEnum::Created,
+            'destination_type' => DestinationType::Custom,
+            'field_mapping' => [],
+            'payload_mode' => PayloadMode::Custom,
+            'custom_payload_template' => '{"name": "{{ name }}"}',
+        ]);
+
+        $result = $this->manager->applyTemplate($template);
+
+        $this->assertSame('{"name": "{{ name }}"}', $result['custom_payload_template']);
     }
 }
