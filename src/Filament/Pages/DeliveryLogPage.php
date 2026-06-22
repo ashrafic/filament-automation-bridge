@@ -73,7 +73,15 @@ class DeliveryLogPage extends Page implements HasTable
                     ->formatStateUsing(fn (DeliveryStatus $state) => $state->getLabel())
                     ->sortable(),
                 Tables\Columns\TextColumn::make('http_status')
-                    ->label('HTTP Status')
+                    ->label('Response')
+                    ->formatStateUsing(function (?int $state) {
+                        if ($state === null) {
+                            return 'N/A';
+                        }
+
+                        return $state;
+                    })
+                    ->description(fn (AutomationDelivery $record) => $record->duration_ms ? $record->duration_ms.' ms' : null)
                     ->color(function (?int $state) {
                         if ($state === null) {
                             return 'gray';
@@ -106,10 +114,6 @@ class DeliveryLogPage extends Page implements HasTable
                 Tables\Columns\TextColumn::make('retry_count')
                     ->label('Retries')
                     ->formatStateUsing(fn (AutomationDelivery $record) => "{$record->retry_count}/{$record->max_retries}")
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('duration_ms')
-                    ->label('Duration')
-                    ->formatStateUsing(fn ($state) => $state ? $state.' ms' : '—')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Delivered At')
