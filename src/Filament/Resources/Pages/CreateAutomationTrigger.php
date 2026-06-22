@@ -13,15 +13,15 @@ class CreateAutomationTrigger extends CreateRecord
 {
     protected static string $resource = AutomationTriggerResource::class;
 
-    protected function mutateFormDataBeforeFill(array $data): array
+    public function mount(): void
     {
+        parent::mount();
+
         $templateId = request()->query('template_id');
 
         if ($templateId && $template = AutomationTemplate::find($templateId)) {
-            return array_merge($data, app(TemplateManager::class)->applyTemplate($template));
+            $this->form->fill(app(TemplateManager::class)->applyTemplate($template));
         }
-
-        return $data;
     }
 
     protected function getHeaderActions(): array
@@ -40,7 +40,7 @@ class CreateAutomationTrigger extends CreateRecord
                         ->searchable(),
                 ])
                 ->action(function (array $data) {
-                    $this->redirect(
+                    return redirect(
                         AutomationTriggerResource::getUrl('create', ['template_id' => $data['template_id']])
                     );
                 }),
