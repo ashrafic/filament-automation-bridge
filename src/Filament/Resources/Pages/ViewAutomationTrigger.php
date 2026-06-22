@@ -3,9 +3,52 @@
 namespace Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages;
 
 use Ashrafic\FilamentAutomationBridge\Filament\Resources\AutomationTriggerResource;
+use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
 class ViewAutomationTrigger extends ViewRecord
 {
     protected static string $resource = AutomationTriggerResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            EditAction::make(),
+
+            Action::make('test_connection')
+                ->label('Test Connection')
+                ->icon('heroicon-o-signal')
+                ->action(function () {
+                    $result = app(DeliveryService::class)->testConnection($this->record);
+
+                    if ($result['success']) {
+                        Notification::make()
+                            ->title('Connection successful')
+                            ->body("HTTP {$result['http_status']} — {$result['duration_ms']}ms")
+                            ->success()
+                            ->send();
+                    } else {
+                        Notification::make()
+                            ->title('Connection failed')
+                            ->body($result['error'] ?? "HTTP {$result['http_status']}")
+                            ->danger()
+                            ->send();
+                    }
+                }),
+
+            Action::make('save_as_template')
+                ->label('Save as Template')
+                ->icon('heroicon-o-bookmark')
+                ->action(function () {
+                    Notification::make()
+                        ->title('Template saved')
+                        ->body('The trigger configuration has been saved as a template. (Placeholder — full implementation coming soon)')
+                        ->success()
+                        ->send();
+                }),
+        ];
+    }
 }
