@@ -1,4 +1,4 @@
-<div class="space-y-4">
+<div class="space-y-6">
     @if($record->payload)
         <x-filament::section>
             <x-slot name="heading">Request Payload</x-slot>

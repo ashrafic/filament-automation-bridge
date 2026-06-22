@@ -64,11 +64,9 @@ class DeliveryLogPage extends Page implements HasTable
                 Tables\Columns\TextColumn::make('model_type')
                     ->label('Model')
                     ->formatStateUsing(fn ($state) => class_basename($state))
+                    ->description(fn (AutomationDelivery $record) => 'ID: '.$record->model_id)
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('model_id')
-                    ->label('Model ID')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (DeliveryStatus $state) => $state->getColor())
