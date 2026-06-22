@@ -7,8 +7,8 @@ use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
-use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Get;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Notifications\Notification;
 
 class TestConnectionAction

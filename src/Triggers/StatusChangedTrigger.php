@@ -6,6 +6,7 @@ use Ashrafic\FilamentAutomationBridge\Contracts\TriggerContract;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Filament\Forms;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Model;
 
 class StatusChangedTrigger implements TriggerContract
@@ -39,7 +40,7 @@ class StatusChangedTrigger implements TriggerContract
     {
         return [
             Forms\Components\Select::make('status_field')
-                ->options(function (Forms\Get $get) {
+                ->options(function (Get $get) {
                     $modelClass = $get('model_class');
 
                     if (! $modelClass) {

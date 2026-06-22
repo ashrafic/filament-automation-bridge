@@ -5,9 +5,9 @@ namespace Ashrafic\FilamentAutomationBridge\Filament\Components;
 use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Closure;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Component;
+use Filament\Schemas\Components\Component;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Utilities\Get;
 
 class FieldMappingBuilder extends Component
 {

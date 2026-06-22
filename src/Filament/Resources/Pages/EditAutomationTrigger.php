@@ -5,6 +5,8 @@ namespace Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages;
 use Ashrafic\FilamentAutomationBridge\Filament\Resources\AutomationTriggerResource;
 use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
@@ -15,6 +17,9 @@ class EditAutomationTrigger extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ViewAction::make(),
+            DeleteAction::make(),
+
             Action::make('test_connection')
                 ->label('Test Connection')
                 ->icon('heroicon-o-signal')

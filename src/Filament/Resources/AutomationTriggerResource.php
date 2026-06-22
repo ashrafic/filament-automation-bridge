@@ -316,7 +316,7 @@ class AutomationTriggerResource extends Resource
                     ->formatStateUsing(fn ($state) => class_basename($state))
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('event')
+                Tables\Columns\TextColumn::make('event')
                     ->badge()
                     ->color(fn ($state) => match ($state) {
                         EventEnum::Created => 'success',
@@ -327,14 +327,13 @@ class AutomationTriggerResource extends Resource
                         default => 'gray',
                     })
                     ->formatStateUsing(fn ($state) => $state instanceof EventEnum ? $state->getLabel() : $state),
-                Tables\Columns\BadgeColumn::make('destination_type')
+                Tables\Columns\TextColumn::make('destination_type')
                     ->label('Destination')
                     ->badge()
                     ->color('gray')
                     ->formatStateUsing(fn ($state) => $state instanceof DestinationType ? $state->getLabel() : $state),
                 Tables\Columns\ToggleColumn::make('active')
                     ->label('Active')
-                    ->requiresConfirmation()
                     ->afterStateUpdated(function ($state) {
                         Notification::make()
                             ->title($state ? 'Trigger activated' : 'Trigger deactivated')

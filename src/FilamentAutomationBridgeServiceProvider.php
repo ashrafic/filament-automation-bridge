@@ -6,6 +6,7 @@ use Ashrafic\FilamentAutomationBridge\Commands\InstallCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\ModelCacheCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\ProcessScheduledTriggersCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\PruneDeliveryLogsCommand;
+use Ashrafic\FilamentAutomationBridge\Commands\SeedTemplatesCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\SyncHistoricalRecordsCommand;
 use Ashrafic\FilamentAutomationBridge\Commands\TestConnectionCommand;
 use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
@@ -17,6 +18,7 @@ use Ashrafic\FilamentAutomationBridge\Listeners\AutomationEventSubscriber;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Illuminate\Support\Facades\Gate;
 use Ashrafic\FilamentAutomationBridge\Triggers\DateConditionTrigger;
 use Ashrafic\FilamentAutomationBridge\Triggers\EventTrigger;
 use Ashrafic\FilamentAutomationBridge\Triggers\ManualTrigger;
@@ -50,6 +52,7 @@ class FilamentAutomationBridgeServiceProvider extends PackageServiceProvider
                 InstallCommand::class,
                 PruneDeliveryLogsCommand::class,
                 ModelCacheCommand::class,
+                SeedTemplatesCommand::class,
                 SyncHistoricalRecordsCommand::class,
                 TestConnectionCommand::class,
                 ProcessScheduledTriggersCommand::class,
@@ -89,6 +92,17 @@ class FilamentAutomationBridgeServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         parent::packageBooted();
+
+        if (config('filament-automation-bridge.authorization.auto_register_gates', true)) {
+            $prefix = config('filament-automation-bridge.authorization.permission_prefix', 'automation_bridge');
+
+            Gate::define("{$prefix}.view_triggers", fn ($user) => true);
+            Gate::define("{$prefix}.create_triggers", fn ($user) => true);
+            Gate::define("{$prefix}.edit_triggers", fn ($user) => true);
+            Gate::define("{$prefix}.delete_triggers", fn ($user) => true);
+            Gate::define("{$prefix}.view_deliveries", fn ($user) => true);
+            Gate::define("{$prefix}.retry_deliveries", fn ($user) => true);
+        }
 
         if (config('filament-automation-bridge.models.paths')) {
             Event::listen('eloquent.*', [AutomationEventSubscriber::class, 'handle']);

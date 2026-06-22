@@ -82,7 +82,7 @@ class ProcessAutomationDelivery implements ShouldQueue
 
         try {
             $client = new Client([
-                'timeout' => $this->webhookTimeout,
+                'timeout' => $this->requestTimeout,
                 'http_errors' => false,
             ]);
 

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('event', 50);
             $table->string('destination_type', 50);
             $table->string('destination_url', 2048);
-            $table->json('field_mapping');
+            $table->json('field_mapping')->nullable();
             $table->string('payload_mode', 20)->default('summary');
             $table->text('custom_payload_template')->nullable();
             $table->json('conditions')->nullable();

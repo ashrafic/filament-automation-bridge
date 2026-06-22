@@ -73,8 +73,8 @@ return [
     */
     'queue' => [
         'connection' => env('AUTOMATION_BRIDGE_QUEUE_CONNECTION', config('queue.default')),
-        'queue_name' => 'webhooks',
-        'historical_sync_queue_name' => 'webhooks-sync',
+        'queue_name' => env('AUTOMATION_BRIDGE_QUEUE', 'default'),
+        'historical_sync_queue_name' => env('AUTOMATION_BRIDGE_SYNC_QUEUE', 'default'),
     ],
 
     /*
@@ -126,7 +126,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'ui' => [
-        'navigation_group' => 'Integrations',
+        'navigation_group' => 'Automation Bridge',
         'navigation_sort' => 80,
         'navigation_icon' => 'heroicon-o-bolt',
         'register_health_widget' => true,

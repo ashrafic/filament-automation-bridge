@@ -7,6 +7,7 @@ use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Filament\Forms;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Model;
 
 class ModelEventTrigger implements TriggerContract
@@ -45,7 +46,7 @@ class ModelEventTrigger implements TriggerContract
                 ->live(),
             Forms\Components\Select::make('watch_fields')
                 ->multiple()
-                ->options(function (Forms\Get $get) {
+                ->options(function (Get $get) {
                     $modelClass = $get('model_class');
 
                     if (! $modelClass) {
@@ -61,7 +62,7 @@ class ModelEventTrigger implements TriggerContract
                         ])
                         ->toArray();
                 })
-                ->visible(fn (Forms\Get $get) => $get('event') === EventEnum::Updated->value),
+                ->visible(fn (Get $get) => $get('event') === EventEnum::Updated->value),
         ];
     }
 

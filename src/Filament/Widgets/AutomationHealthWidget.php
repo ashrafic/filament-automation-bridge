@@ -11,7 +11,7 @@ use Filament\Widgets\Widget;
 
 class AutomationHealthWidget extends Widget
 {
-    protected static string $view = 'filament-automation-bridge::widgets.automation-health';
+    protected string $view = 'filament-automation-bridge::widgets.automation-health';
 
     protected static ?int $sort = 80;
 

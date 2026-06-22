@@ -6,6 +6,7 @@ use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
 use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
+use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -19,17 +20,20 @@ class DeliveryLogPage extends Page implements HasTable
 {
     use Tables\Concerns\InteractsWithTable;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
     protected static ?int $navigationSort = 81;
 
-    protected static string $view = 'filament-automation-bridge::pages.delivery-log';
+    protected string $view = 'filament-automation-bridge::pages.delivery-log';
 
     protected static ?string $slug = 'automation-bridge/delivery-logs';
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string | \UnitEnum | null
     {
         return config('filament-automation-bridge.ui.navigation_group', 'Integrations');
+    }
+
+    public static function getNavigationIcon(): string | \BackedEnum | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return 'heroicon-o-document-text';
     }
 
     public static function getModelLabel(): string
@@ -65,7 +69,7 @@ class DeliveryLogPage extends Page implements HasTable
                 Tables\Columns\TextColumn::make('model_id')
                     ->label('Model ID')
                     ->searchable(),
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (DeliveryStatus $state) => $state->getColor())
                     ->formatStateUsing(fn (DeliveryStatus $state) => $state->getLabel())
@@ -92,7 +96,7 @@ class DeliveryLogPage extends Page implements HasTable
                         return 'danger';
                     })
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('source')
+                Tables\Columns\TextColumn::make('source')
                     ->badge()
                     ->color(fn (DeliverySource $state) => match ($state) {
                         DeliverySource::Realtime => 'success',
@@ -159,7 +163,7 @@ class DeliveryLogPage extends Page implements HasTable
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('retry')
+                Actions\Action::make('retry')
                     ->label('Retry')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
@@ -183,7 +187,7 @@ class DeliveryLogPage extends Page implements HasTable
                                 ->send();
                         }
                     }),
-                Tables\Actions\Action::make('view_details')
+                Actions\Action::make('view_details')
                     ->label('Details')
                     ->icon('heroicon-o-eye')
                     ->modalHeading(fn (AutomationDelivery $record) => "Delivery #{$record->id}")
@@ -193,7 +197,7 @@ class DeliveryLogPage extends Page implements HasTable
                     ->slideOver(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkAction::make('bulk_retry')
+                Actions\BulkAction::make('bulk_retry')
                     ->label('Retry Selected')
                     ->icon('heroicon-o-arrow-path')
                     ->requiresConfirmation()
@@ -206,7 +210,7 @@ class DeliveryLogPage extends Page implements HasTable
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\DeleteBulkAction::make(),
+                Actions\DeleteBulkAction::make(),
             ])
             ->poll(config('filament-automation-bridge.ui.polling_interval', '5s'));
     }
