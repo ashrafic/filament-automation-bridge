@@ -332,28 +332,14 @@ class AutomationTriggerResource extends Resource
                     ->badge()
                     ->color('gray')
                     ->formatStateUsing(fn ($state) => $state instanceof DestinationType ? $state->getLabel() : $state),
-                Tables\Columns\IconColumn::make('active')
+                Tables\Columns\ToggleColumn::make('active')
                     ->label('Active')
-                    ->boolean()
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-x-circle')
-                    ->trueColor('success')
-                    ->falseColor('danger')
-                    ->action(
-                        Actions\Action::make('toggle_active')
-                            ->hiddenLabel()
-                            ->requiresConfirmation()
-                            ->modalHeading(fn (AutomationTrigger $record) => $record->active ? 'Deactivate trigger?' : 'Activate trigger?')
-                            ->modalDescription(fn (AutomationTrigger $record) => $record->active ? 'This trigger will stop firing.' : 'This trigger will start firing on matching events.')
-                            ->action(function (AutomationTrigger $record) {
-                                $record->update(['active' => ! $record->active]);
-
-                                Notification::make()
-                                    ->title($record->active ? 'Trigger activated' : 'Trigger deactivated')
-                                    ->success()
-                                    ->send();
-                            })
-                    ),
+                    ->afterStateUpdated(function ($state) {
+                        Notification::make()
+                            ->title($state ? 'Trigger activated' : 'Trigger deactivated')
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Columns\TextColumn::make('last_delivered_at')
                     ->label('Last Delivered')
                     ->dateTime()
