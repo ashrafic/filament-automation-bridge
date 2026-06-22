@@ -430,7 +430,7 @@ class AutomationTriggerResource extends Resource
                         app(DeliveryService::class)->cancelPendingDeliveries($record);
                     }),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 Actions\DeleteBulkAction::make(),
                 Actions\BulkAction::make('bulk_enable')
                     ->label('Enable')

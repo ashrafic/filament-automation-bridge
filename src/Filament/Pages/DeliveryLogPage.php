@@ -198,7 +198,7 @@ class DeliveryLogPage extends Page implements HasTable
                     ->modalCancelActionLabel('Close')
                     ->slideOver(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 Actions\BulkAction::make('bulk_retry')
                     ->label('Retry Selected')
                     ->icon('heroicon-o-arrow-path')
