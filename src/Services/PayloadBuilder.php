@@ -29,7 +29,7 @@ class PayloadBuilder
         $payloadMode = $trigger->payload_mode;
 
         $data = match ($payloadMode) {
-            PayloadMode::Summary => $this->extractFields($model, $trigger->field_mapping ?? []),
+            PayloadMode::Summary => $this->extractFields($model, $trigger->field_mapping ?? []) ?: $this->extractAllAttributes($model),
             PayloadMode::All => $this->extractAllAttributes($model),
             PayloadMode::Custom => $this->renderTemplate(
                 $trigger->custom_payload_template ?? '',
@@ -143,7 +143,7 @@ class PayloadBuilder
         $allValues = array_merge($replacements, $modelAttributes);
 
         $rendered = preg_replace_callback(
-            '/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/',
+            '/\{\{\s*([a-zA-Z0-9_.]+)(?:\s*\|\s*json)?\s*\}\}/',
             function ($match) use ($allValues) {
                 $key = $match[1];
                 $value = data_get($allValues, $key, $match[0]);
@@ -180,7 +180,7 @@ class PayloadBuilder
             return $errors;
         }
 
-        preg_match_all('/\{\{([^}]*?)\}\}/', $template, $matches);
+        preg_match_all('/\{\{\s*([a-zA-Z0-9_.]+)(?:\s*\|\s*json\s*)?\}\}/', $template, $matches);
 
         foreach ($matches[1] as $placeholder) {
             $trimmed = trim($placeholder);
@@ -204,7 +204,7 @@ class PayloadBuilder
         $decoded = json_decode($template, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $placeholdersReplaced = preg_replace('/\{\{\s*[a-zA-Z0-9_.]+\s*\}\}/', '"placeholder"', $template);
+            $placeholdersReplaced = preg_replace('/\{\{\s*[a-zA-Z0-9_.]+(?:\s*\|\s*json\s*)?\}\}/', '"placeholder"', $template);
             $decoded = json_decode($placeholdersReplaced, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {

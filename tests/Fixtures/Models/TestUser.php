@@ -17,6 +17,8 @@ class TestUser extends Model
         'name',
         'email',
         'status',
+        'is_visible',
+        'score',
         'email_verified_at',
     ];
 
@@ -27,6 +29,8 @@ class TestUser extends Model
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_visible' => 'boolean',
+        'score' => 'integer',
     ];
 
     public function orders(): HasMany

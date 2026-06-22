@@ -152,6 +152,20 @@ class DeliveryService
     protected function dispatchGeneric(AutomationTrigger $trigger, Model $model, DeliverySource $source, array $triggerContext = []): ?AutomationDelivery
     {
         try {
+            if (! $this->conditionEvaluator->evaluate($model, $trigger->conditions)) {
+                return null;
+            }
+        } catch (\Throwable $e) {
+            Log::error('DeliveryService: condition evaluation failed', [
+                'trigger_id' => $trigger->id,
+                'model' => get_class($model),
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        try {
             $payload = $this->buildGenericPayload($trigger, $model, $triggerContext);
         } catch (\Throwable $e) {
             Log::error('DeliveryService: payload build failed', [
@@ -261,7 +275,7 @@ class DeliveryService
         $allValues = array_merge($replacements, $modelAttributes);
 
         $rendered = preg_replace_callback(
-            '/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/',
+            '/\{\{\s*([a-zA-Z0-9_.]+)(?:\s*\|\s*json)?\s*\}\}/',
             function ($match) use ($allValues) {
                 $key = $match[1];
                 $value = data_get($allValues, $key, $match[0]);

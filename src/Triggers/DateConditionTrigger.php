@@ -7,6 +7,7 @@ use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Model;
 
 class DateConditionTrigger implements TriggerContract
@@ -41,7 +42,7 @@ class DateConditionTrigger implements TriggerContract
         return [
             Forms\Components\Select::make('date_field')
                 ->label('Date Field')
-                ->options(function (Forms\Get $get) {
+                ->options(function (Get $get) {
                     $modelClass = $get('model_class');
 
                     if (! $modelClass) {
@@ -52,7 +53,7 @@ class DateConditionTrigger implements TriggerContract
                     $attributes = $analyzer->getAttributeNames($modelClass);
 
                     return collect($attributes)
-                        ->filter(function ($attr) use ($modelClass) {
+                        ->filter(function ($attr) use ($modelClass, $analyzer) {
                             $name = is_array($attr) ? $attr['name'] : $attr;
                             $type = $analyzer->getAttributeColumnType($modelClass, $name);
 

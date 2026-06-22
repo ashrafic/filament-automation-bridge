@@ -4,7 +4,6 @@ namespace Ashrafic\FilamentAutomationBridge\Triggers;
 
 use Ashrafic\FilamentAutomationBridge\Contracts\TriggerContract;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
-use Ashrafic\FilamentAutomationBridge\Services\ConditionEvaluator;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Model;
 
@@ -50,7 +49,6 @@ class EventTrigger implements TriggerContract
     {
         return [
             'event_class' => '',
-            'conditions' => null,
         ];
     }
 
@@ -64,19 +62,7 @@ class EventTrigger implements TriggerContract
 
         $dispatchedClass = $context['event_class'] ?? '';
 
-        if ($dispatchedClass !== $eventClass) {
-            return false;
-        }
-
-        if (! empty($config['conditions'])) {
-            $eventProperties = $context['event_properties'] ?? [];
-
-            $evaluator = app(ConditionEvaluator::class);
-
-            return $evaluator->evaluate($model, $config['conditions'], $eventProperties);
-        }
-
-        return true;
+        return $dispatchedClass === $eventClass;
     }
 
     public function getContextData(Model $model, array $config): array

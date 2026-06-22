@@ -14,8 +14,11 @@ use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Ashrafic\FilamentAutomationBridge\Services\ModelDiscoveryService;
 use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
+use Filament\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -27,11 +30,14 @@ class AutomationTriggerResource extends Resource
 {
     protected static ?string $model = AutomationTrigger::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bolt';
-
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string | \UnitEnum | null
     {
         return config('filament-automation-bridge.ui.navigation_group', 'Integrations');
+    }
+
+    public static function getNavigationIcon(): string | \BackedEnum | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return config('filament-automation-bridge.ui.navigation_icon') ?? 'heroicon-o-bolt';
     }
 
     public static function getNavigationSort(): ?int
@@ -54,46 +60,46 @@ class AutomationTriggerResource extends Resource
         return auth()->user()?->can('automation_bridge.view_triggers') ?? false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->schema([
-                Forms\Components\Section::make('Trigger Configuration')
-                    ->schema(function (Forms\Get $get) {
+                Section::make('When this happens...')
+                    ->description('Choose the model and event that triggers this automation')
+                    ->icon('heroicon-o-bolt')
+                    ->collapsible()
+                    ->schema(function (Get $get) {
                         $schema = [
-                            Forms\Components\TextInput::make('name')
-                                ->required()
-                                ->maxLength(255)
-                                ->live(onBlur: true),
-                            Forms\Components\Textarea::make('description')
-                                ->maxLength(1000)
-                                ->columnSpanFull(),
-                            Forms\Components\Select::make('trigger_type')
-                                ->label('Trigger Type')
-                                ->options(fn () => app(TriggerManager::class)->options())
-                                ->default('model-event')
-                                ->required()
-                                ->live()
-                                ->afterStateUpdated(function (callable $set) {
-                                    $set('event', null);
-                                    $set('trigger_config', []);
-                                }),
                             Forms\Components\Select::make('model_class')
                                 ->label('Model')
                                 ->options(fn () => app(ModelDiscoveryService::class)->getAllModels())
                                 ->searchable()
                                 ->required()
                                 ->live()
-                                ->placeholder('Select a model'),
+                                ->placeholder('Choose a model...')
+                                ->helperText('The Eloquent model to watch for events'),
+                            Forms\Components\Select::make('trigger_type')
+                                ->label('Trigger Type')
+                                ->options(fn () => app(TriggerManager::class)->options())
+                                ->default('model-event')
+                                ->required()
+                                ->live()
+                                ->helperText('How should this automation fire?')
+                                ->afterStateUpdated(function (callable $set) {
+                                    $set('event', null);
+                                    $set('trigger_config', []);
+                                }),
                         ];
 
                         $triggerType = $get('trigger_type') ?? 'model-event';
 
                         if ($triggerType === 'model-event') {
                             $schema[] = Forms\Components\Select::make('event')
+                                ->label('On Event')
                                 ->options(EventEnum::class)
                                 ->required()
-                                ->live();
+                                ->live()
+                                ->helperText('Which model event triggers this?');
                         }
 
                         $triggerManager = app(TriggerManager::class);
@@ -122,67 +128,35 @@ class AutomationTriggerResource extends Resource
                             }
                         }
 
-                        $schema = array_merge($schema, [
-                            Forms\Components\Select::make('destination_type')
-                                ->label('Destination Type')
-                                ->options(DestinationType::class)
-                                ->required(),
-                            Forms\Components\TextInput::make('destination_url')
-                                ->label('Destination URL')
-                                ->url()
-                                ->required()
-                                ->maxLength(2048),
-                            Forms\Components\Toggle::make('active')
-                                ->default(true),
-                        ]);
+                        $schema[] = Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->helperText('A descriptive name to identify this automation');
+
+                        $schema[] = Forms\Components\Textarea::make('description')
+                            ->maxLength(1000)
+                            ->rows(2)
+                            ->columnSpanFull()
+                            ->helperText('Optional notes about what this automation does');
 
                         return $schema;
                     })
-                    ->columns(2),
+                    ->columns(2)
+                    ->extraAttributes(['class' => '!mb-6']),
 
-                Forms\Components\Section::make('Payload Configuration')
-                    ->schema([
-                        Forms\Components\Select::make('payload_mode')
-                            ->label('Payload Mode')
-                            ->options(PayloadMode::class)
-                            ->required()
-                            ->default(PayloadMode::Summary->value)
-                            ->live(),
-                        Forms\Components\Select::make('field_mapping')
-                            ->label('Fields')
-                            ->multiple()
-                            ->options(function (Forms\Get $get) {
-                                $modelClass = $get('model_class');
-
-                                if (! $modelClass) {
-                                    return [];
-                                }
-
-                                $analyzer = app(FieldSchemaAnalyzer::class);
-                                $attributes = $analyzer->getAttributeNames($modelClass);
-
-                                return collect($attributes)
-                                    ->mapWithKeys(fn ($attr) => [
-                                        is_array($attr) ? $attr['name'] : $attr => is_array($attr) ? $attr['name'] : $attr,
-                                    ])
-                                    ->toArray();
-                            })
-                            ->visible(fn (Forms\Get $get) => $get('payload_mode') === PayloadMode::Summary->value)
-                            ->columnSpanFull(),
-                        Forms\Components\Textarea::make('custom_payload_template')
-                            ->label('Custom Payload Template')
-                            ->rows(6)
-                            ->visible(fn (Forms\Get $get) => $get('payload_mode') === PayloadMode::Custom->value)
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(2),
-
-                Forms\Components\Section::make('Conditions (Optional)')
+                Section::make('Only if these conditions match')
+                    ->description('Add rules to filter when this automation should fire (skip to always run)')
+                    ->icon('heroicon-o-funnel')
+                    ->collapsible()
+                    ->collapsed(fn ($state) => empty(data_get($state, 'conditions')))
                     ->schema([
                         Forms\Components\Repeater::make('conditions')
+                            ->label('')
+                            ->addActionLabel('Add Condition')
                             ->schema([
                                 Forms\Components\Select::make('field')
-                                    ->options(function (Forms\Get $get) {
+                                ->options(function (Get $get) {
                                         $modelClass = $get('../../model_class');
 
                                         if (! $modelClass) {
@@ -198,7 +172,8 @@ class AutomationTriggerResource extends Resource
                                             ])
                                             ->toArray();
                                     })
-                                    ->required(),
+                                    ->required()
+                                    ->placeholder('Field'),
                                 Forms\Components\Select::make('operator')
                                     ->options([
                                         'equals' => 'Equals',
@@ -211,33 +186,106 @@ class AutomationTriggerResource extends Resource
                                         'changed' => 'Changed',
                                         'changed_to' => 'Changed To',
                                     ])
-                                    ->required(),
+                                    ->required()
+                                    ->placeholder('Operator'),
                                 Forms\Components\TextInput::make('value')
-                                    ->visible(fn (Forms\Get $get) => ! in_array($get('operator'), ['is_empty', 'is_not_empty', 'changed'])),
-                                Forms\Components\Select::make('log')
+                                    ->placeholder('Value')
+                                    ->visible(fn (Get $get) => ! in_array($get('operator'), ['is_empty', 'is_not_empty', 'changed'])),
+                                Forms\Components\Select::make('logic')
                                     ->options([
-                                        'and' => 'AND',
-                                        'or' => 'OR',
+                                        'AND' => 'AND',
+                                        'OR' => 'OR',
                                     ])
                                     ->default('and')
-                                    ->visible(fn (Forms\Get $get, string $context) => $context === 'edit'),
+                                    ->visible(fn (Get $get, string $context) => $context === 'edit'),
                             ])
-                            ->columns(2)
-                            ->collapsible()
-                            ->collapsed(fn ($state) => empty($state))
+                            ->columns(3)
+                            ->defaultItems(0)
                             ->columnSpanFull(),
                     ])
-                    ->collapsible()
-                    ->collapsed(fn ($state) => empty(data_get($state, 'conditions'))),
+                    ->extraAttributes(['class' => '!mb-6']),
 
-                Forms\Components\Section::make('Security & Settings')
+                Section::make('Then send data to...')
+                    ->description('Choose your automation platform and configure the payload')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->collapsible()
+                    ->schema(function (Get $get) {
+                        $modelClass = $get('model_class');
+
+                        return [
+                            Forms\Components\Select::make('destination_type')
+                                ->label('Destination')
+                                ->options(DestinationType::class)
+                                ->required()
+                                ->live()
+                                ->helperText('Zapier, Make, n8n, or any custom webhook endpoint'),
+                            Forms\Components\TextInput::make('destination_url')
+                                ->label('Webhook URL')
+                                ->url()
+                                ->required()
+                                ->maxLength(2048)
+                                ->placeholder('https://hooks.zapier.com/...')
+                                ->helperText('Paste the webhook URL from your automation platform'),
+                            Forms\Components\Select::make('payload_mode')
+                                ->label('Payload Mode')
+                                ->options(PayloadMode::class)
+                                ->required()
+                                ->default(PayloadMode::Summary->value)
+                                ->live(),
+                            Forms\Components\Select::make('field_mapping')
+                                ->label('Include Fields (for Summary mode)')
+                                ->multiple()
+                                ->searchable()
+                                ->hidden(fn (Get $get) => $get('payload_mode')?->value !== PayloadMode::Summary->value)
+                                ->dehydratedWhenHidden()
+                                ->default([])
+                                ->options(function (Get $get) {
+                                    $modelClass = $get('model_class');
+
+                                    if (! $modelClass) {
+                                        return [];
+                                    }
+
+                                    $analyzer = app(FieldSchemaAnalyzer::class);
+                                    $attributes = $analyzer->getAttributeNames($modelClass);
+
+                                    return collect($attributes)
+                                        ->mapWithKeys(fn ($attr) => [
+                                            is_array($attr) ? $attr['name'] : $attr => is_array($attr) ? $attr['name'] : $attr,
+                                        ])
+                                        ->toArray();
+                                })
+                                ->columnSpanFull(),
+                            Forms\Components\Textarea::make('custom_payload_template')
+                                ->label('Custom Payload Template (for Custom mode)')
+                                ->rows(6)
+                                ->placeholder('{"event": "{{ event }}", "data": {{ payload | json }}}')
+                                ->hidden(fn (Get $get) => $get('payload_mode')?->value !== PayloadMode::Custom->value)
+                                ->dehydratedWhenHidden()
+                                ->columnSpanFull()
+                                ->helperText('Use {{ field }} for model attributes. Example: {"event": "{{ event }}", "name": "{{ name }}"}'),
+                        ];
+                    })
+                    ->columns(2)
+                    ->extraAttributes(['class' => '!mb-6']),
+
+                Section::make('Settings')
+                    ->description('Name, security, and behavior for this automation')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
+                        Forms\Components\Toggle::make('active')
+                            ->label('Active')
+                            ->default(true)
+                            ->helperText('Enable or disable this automation'),
                         Forms\Components\TextInput::make('secret')
                             ->password()
                             ->revealable()
                             ->maxLength(255)
                             ->dehydrated(fn ($state) => filled($state))
-                            ->placeholder('Leave blank to auto-generate'),
+                            ->placeholder('Auto-generated if left blank')
+                            ->helperText('HMAC secret for payload signing'),
                         Forms\Components\TextInput::make('request_timeout')
                             ->label('Timeout (seconds)')
                             ->numeric()
@@ -251,7 +299,7 @@ class AutomationTriggerResource extends Resource
                             ->maxValue(5)
                             ->default(3),
                     ])
-                    ->columns(3),
+                    ->columns(2),
             ]);
     }
 
@@ -353,8 +401,8 @@ class AutomationTriggerResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('toggle_active')
+                Actions\EditAction::make(),
+                Actions\Action::make('toggle_active')
                     ->label(fn (AutomationTrigger $record) => $record->active ? 'Deactivate' : 'Activate')
                     ->icon(fn (AutomationTrigger $record) => $record->active ? 'heroicon-o-pause' : 'heroicon-o-play')
                     ->requiresConfirmation()
@@ -366,7 +414,7 @@ class AutomationTriggerResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\Action::make('duplicate')
+                Actions\Action::make('duplicate')
                     ->icon('heroicon-o-document-duplicate')
                     ->requiresConfirmation()
                     ->action(function (AutomationTrigger $record) {
@@ -381,19 +429,19 @@ class AutomationTriggerResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\Action::make('view_logs')
+                Actions\Action::make('view_logs')
                     ->label('Delivery Logs')
                     ->icon('heroicon-o-document-text')
                     ->url('#')
                     ->visible(false),
-                Tables\Actions\DeleteAction::make()
+                Actions\DeleteAction::make()
                     ->before(function (AutomationTrigger $record) {
                         app(DeliveryService::class)->cancelPendingDeliveries($record);
                     }),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-                Tables\Actions\BulkAction::make('bulk_enable')
+                Actions\DeleteBulkAction::make(),
+                Actions\BulkAction::make('bulk_enable')
                     ->label('Enable')
                     ->icon('heroicon-o-check-circle')
                     ->action(function (Collection $records) {
@@ -404,7 +452,7 @@ class AutomationTriggerResource extends Resource
                             ->success()
                             ->send();
                     }),
-                Tables\Actions\BulkAction::make('bulk_disable')
+                Actions\BulkAction::make('bulk_disable')
                     ->label('Disable')
                     ->icon('heroicon-o-x-circle')
                     ->action(function (Collection $records) {

@@ -182,8 +182,8 @@ class ConditionEvaluator
 
         if (is_bool($actual) && is_string($expected)) {
             $expected = match (strtolower($expected)) {
-                'true' => true,
-                'false' => false,
+                'true', '1' => true,
+                'false', '0' => false,
                 default => $expected,
             };
         }

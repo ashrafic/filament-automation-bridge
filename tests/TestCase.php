@@ -48,6 +48,8 @@ abstract class TestCase extends BaseTestCase
             $table->string('name');
             $table->string('email');
             $table->string('status')->default('active');
+            $table->boolean('is_visible')->default(true);
+            $table->integer('score')->nullable()->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->rememberToken();

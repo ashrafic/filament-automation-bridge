@@ -6,6 +6,7 @@ use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
 use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class AutomationEventSubscriber
 {
@@ -23,7 +24,7 @@ class AutomationEventSubscriber
         $model = $payload[0];
 
         $parts = explode(':', $event, 2);
-        $eventType = str_replace('eloquent.', '', $parts[0]);
+        $eventType = Str::snake(str_replace('eloquent.', '', $parts[0]));
         $modelClass = $parts[1] ?? null;
 
         if ($modelClass === null) {
@@ -36,7 +37,7 @@ class AutomationEventSubscriber
             return;
         }
 
-        $modelClass = str_replace('/', '\\', $modelClass);
+        $modelClass = trim(str_replace('/', '\\', $modelClass));
 
         $triggers = $this->deliveryService->getActiveTriggers($modelClass, $eventEnum);
 
@@ -55,7 +56,8 @@ class AutomationEventSubscriber
                 }
 
                 $triggerContract = $this->triggerManager->get($trigger->trigger_type);
-                $context = $triggerContract->getContextData($model, $trigger->trigger_config ?? []);
+                $config = array_merge($trigger->trigger_config ?? [], ['event' => $eventEnum->value]);
+                $context = $triggerContract->getContextData($model, $config);
             } elseif ($trigger->isTriggerType('status-changed')) {
                 $triggerContract = $this->triggerManager->get($trigger->trigger_type);
 
@@ -63,7 +65,8 @@ class AutomationEventSubscriber
                     continue;
                 }
 
-                $context = $triggerContract->getContextData($model, $trigger->trigger_config ?? []);
+                $config = array_merge($trigger->trigger_config ?? [], ['event' => $eventEnum->value]);
+                $context = $triggerContract->getContextData($model, $config);
             }
 
             $this->deliveryService->dispatch($trigger, $model, $eventEnum, $model->getOriginal(), $context);
