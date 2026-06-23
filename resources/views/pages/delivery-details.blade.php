@@ -1,77 +1,117 @@
 <div class="space-y-6">
     @if($record->payload)
         <x-filament::section>
-            <x-slot name="heading">Request Payload</x-slot>
-            <div x-data="{ copied: false }" class="relative">
-                <pre
-                    x-ref="code"
-                    class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 pr-12 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
-                >{{ json_encode($record->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
-                <button
-                    x-on:click="navigator.clipboard.writeText($refs.code.textContent); copied = true; setTimeout(() => copied = false, 2000)"
-                    class="absolute top-2 right-2 rounded-lg bg-gray-700 px-2 py-1 text-xs text-gray-300 hover:bg-gray-600 transition"
-                >
-                    <span x-show="!copied">Copy</span>
-                    <span x-show="copied" x-cloak>Copied!</span>
-                </button>
-            </div>
+            <x-slot name="heading">
+                <div class="flex items-center justify-between w-full">
+                    <span>Request Payload</span>
+                    <button
+                        type="button"
+                        x-data="{ copied: false }"
+                        x-on:click="
+                            navigator.clipboard.writeText($refs.payload.textContent).then(() => {
+                                copied = true;
+                                setTimeout(() => copied = false, 2000)
+                            }).catch(() => {})
+                        "
+                        class="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition"
+                    >
+                        <x-filament::icon name="heroicon-o-clipboard" class="size-4" />
+                        <span x-show="!copied">Copy</span>
+                        <span x-show="copied" x-cloak class="text-success-600">Copied!</span>
+                    </button>
+                </div>
+            </x-slot>
+            <pre
+                x-ref="payload"
+                class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
+            >{{ json_encode($record->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 
     @if($record->headers)
         <x-filament::section>
-            <x-slot name="heading">Request Headers</x-slot>
-            <div x-data="{ copied: false }" class="relative">
-                <pre
-                    x-ref="code"
-                    class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 pr-12 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
-                >{{ json_encode($record->headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
-                <button
-                    x-on:click="navigator.clipboard.writeText($refs.code.textContent); copied = true; setTimeout(() => copied = false, 2000)"
-                    class="absolute top-2 right-2 rounded-lg bg-gray-700 px-2 py-1 text-xs text-gray-300 hover:bg-gray-600 transition"
-                >
-                    <span x-show="!copied">Copy</span>
-                    <span x-show="copied" x-cloak>Copied!</span>
-                </button>
-            </div>
+            <x-slot name="heading">
+                <div class="flex items-center justify-between w-full">
+                    <span>Request Headers</span>
+                    <button
+                        type="button"
+                        x-data="{ copied: false }"
+                        x-on:click="
+                            navigator.clipboard.writeText($refs.headers.textContent).then(() => {
+                                copied = true;
+                                setTimeout(() => copied = false, 2000)
+                            }).catch(() => {})
+                        "
+                        class="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition"
+                    >
+                        <x-filament::icon name="heroicon-o-clipboard" class="size-4" />
+                        <span x-show="!copied">Copy</span>
+                        <span x-show="copied" x-cloak class="text-success-600">Copied!</span>
+                    </button>
+                </div>
+            </x-slot>
+            <pre
+                x-ref="headers"
+                class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
+            >{{ json_encode($record->headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 
     @if($record->response_body)
         <x-filament::section>
-            <x-slot name="heading">Response Body</x-slot>
-            <div x-data="{ copied: false }" class="relative">
-                <pre
-                    x-ref="code"
-                    class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 pr-12 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
-                >{{ is_string($record->response_body) ? $record->response_body : json_encode($record->response_body, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
-                <button
-                    x-on:click="navigator.clipboard.writeText($refs.code.textContent); copied = true; setTimeout(() => copied = false, 2000)"
-                    class="absolute top-2 right-2 rounded-lg bg-gray-700 px-2 py-1 text-xs text-gray-300 hover:bg-gray-600 transition"
-                >
-                    <span x-show="!copied">Copy</span>
-                    <span x-show="copied" x-cloak>Copied!</span>
-                </button>
-            </div>
+            <x-slot name="heading">
+                <div class="flex items-center justify-between w-full">
+                    <span>Response Body</span>
+                    <button
+                        type="button"
+                        x-data="{ copied: false }"
+                        x-on:click="
+                            navigator.clipboard.writeText($refs.body.textContent).then(() => {
+                                copied = true;
+                                setTimeout(() => copied = false, 2000)
+                            }).catch(() => {})
+                        "
+                        class="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition"
+                    >
+                        <x-filament::icon name="heroicon-o-clipboard" class="size-4" />
+                        <span x-show="!copied">Copy</span>
+                        <span x-show="copied" x-cloak class="text-success-600">Copied!</span>
+                    </button>
+                </div>
+            </x-slot>
+            <pre
+                x-ref="body"
+                class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
+            >{{ is_string($record->response_body) ? $record->response_body : json_encode($record->response_body, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 
     @if($record->response_headers)
         <x-filament::section>
-            <x-slot name="heading">Response Headers</x-slot>
-            <div x-data="{ copied: false }" class="relative">
-                <pre
-                    x-ref="code"
-                    class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 pr-12 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
-                >{{ json_encode($record->response_headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
-                <button
-                    x-on:click="navigator.clipboard.writeText($refs.code.textContent); copied = true; setTimeout(() => copied = false, 2000)"
-                    class="absolute top-2 right-2 rounded-lg bg-gray-700 px-2 py-1 text-xs text-gray-300 hover:bg-gray-600 transition"
-                >
-                    <span x-show="!copied">Copy</span>
-                    <span x-show="copied" x-cloak>Copied!</span>
-                </button>
-            </div>
+            <x-slot name="heading">
+                <div class="flex items-center justify-between w-full">
+                    <span>Response Headers</span>
+                    <button
+                        type="button"
+                        x-data="{ copied: false }"
+                        x-on:click="
+                            navigator.clipboard.writeText($refs.respHeaders.textContent).then(() => {
+                                copied = true;
+                                setTimeout(() => copied = false, 2000)
+                            }).catch(() => {})
+                        "
+                        class="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition"
+                    >
+                        <x-filament::icon name="heroicon-o-clipboard" class="size-4" />
+                        <span x-show="!copied">Copy</span>
+                        <span x-show="copied" x-cloak class="text-success-600">Copied!</span>
+                    </button>
+                </div>
+            </x-slot>
+            <pre
+                x-ref="respHeaders"
+                class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950"
+            >{{ json_encode($record->response_headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 
