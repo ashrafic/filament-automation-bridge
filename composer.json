@@ -1,0 +1,63 @@
+{
+    "name": "ashrafic/filament-automation-bridge",
+    "description": "Turn any Eloquent model event into an automation trigger for Zapier, Make, or n8n — without writing code.",
+    "type": "filament-plugin",
+    "license": "MIT",
+    "keywords": [
+        "filament",
+        "laravel",
+        "automation",
+        "zapier",
+        "make",
+        "n8n",
+        "filament-plugin"
+    ],
+    "authors": [
+        {
+            "name": "Ashrafic Labs",
+            "email": "hello@ashraficlabs.com",
+            "homepage": "https://ashraficlabs.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ashrafic/filament-automation-bridge/issues",
+        "source": "https://github.com/ashrafic/filament-automation-bridge"
+    },
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^5.0",
+        "spatie/laravel-webhook-server": "^3.8",
+        "spatie/laravel-package-tools": "^1.15"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0",
+        "phpunit/phpunit": "^10.0|^11.0",
+        "mockery/mockery": "^1.6",
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ashrafic\\FilamentAutomationBridge\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ashrafic\\FilamentAutomationBridge\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ashrafic\\FilamentAutomationBridge\\FilamentAutomationBridgeServiceProvider"
+            ],
+            "aliases": {
+                "AutomationBridge": "Ashrafic\\FilamentAutomationBridge\\Facades\\AutomationBridge"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "pint": "vendor/bin/pint",
+        "pint-test": "vendor/bin/pint --test"
+    }
+}
