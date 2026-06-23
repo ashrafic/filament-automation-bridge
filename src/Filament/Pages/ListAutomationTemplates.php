@@ -5,7 +5,6 @@ namespace Ashrafic\FilamentAutomationBridge\Filament\Pages;
 use Ashrafic\FilamentAutomationBridge\Filament\Resources\AutomationTriggerResource;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTemplate;
 use Filament\Actions;
-use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Tables;
 use Filament\Tables\Contracts\HasTable;
@@ -81,15 +80,7 @@ class ListAutomationTemplates extends Page implements HasTable
                     ->label('Use Template')
                     ->icon('heroicon-o-document-plus')
                     ->url(fn (AutomationTemplate $record) => AutomationTriggerResource::getUrl('create', ['template_id' => $record->id])),
-                Actions\DeleteAction::make()
-                    ->action(function (AutomationTemplate $record) {
-                        $record->delete();
-
-                        Notification::make()
-                            ->title('Template deleted')
-                            ->success()
-                            ->send();
-                    }),
+                Actions\DeleteAction::make(),
             ])
             ->emptyStateHeading('No templates yet')
             ->emptyStateDescription('Save a trigger configuration as a template from the Edit or View page.');
