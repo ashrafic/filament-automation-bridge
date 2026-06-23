@@ -77,11 +77,11 @@ class ListAutomationTemplates extends Page implements HasTable
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\Action::make('apply')
+                Actions\Action::make('apply')
                     ->label('Use Template')
                     ->icon('heroicon-o-document-plus')
                     ->url(fn (AutomationTemplate $record) => AutomationTriggerResource::getUrl('create', ['template_id' => $record->id])),
-                Tables\Actions\DeleteAction::make()
+                Actions\DeleteAction::make()
                     ->action(function (AutomationTemplate $record) {
                         $record->delete();
 
