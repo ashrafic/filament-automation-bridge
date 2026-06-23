@@ -7,7 +7,6 @@ use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
 use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\CreateAutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\EditAutomationTrigger;
-use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\ListAutomationTemplates;
 use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\ListAutomationTriggers;
 use Ashrafic\FilamentAutomationBridge\Filament\Resources\Pages\ViewAutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
@@ -469,7 +468,6 @@ class AutomationTriggerResource extends Resource
         return [
             'index' => ListAutomationTriggers::route('/'),
             'create' => CreateAutomationTrigger::route('/create'),
-            'templates' => ListAutomationTemplates::route('/templates'),
             'edit' => EditAutomationTrigger::route('/{record}/edit'),
             'view' => ViewAutomationTrigger::route('/{record}'),
         ];
