@@ -7,6 +7,7 @@ use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
 use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
 use Ashrafic\FilamentAutomationBridge\Exceptions\InvalidPayloadException;
+use Ashrafic\FilamentAutomationBridge\Exceptions\ModelNotFoundException;
 use Ashrafic\FilamentAutomationBridge\Formatters\CustomFormatter;
 use Ashrafic\FilamentAutomationBridge\Formatters\MakeFormatter;
 use Ashrafic\FilamentAutomationBridge\Formatters\N8nFormatter;
@@ -56,7 +57,7 @@ class PayloadBuilder
         $modelClass = $trigger->model_class;
 
         if (! class_exists($modelClass)) {
-            throw InvalidPayloadException::classDoesNotExist($modelClass);
+            throw ModelNotFoundException::forClass($modelClass);
         }
 
         $model = new $modelClass;

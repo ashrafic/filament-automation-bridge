@@ -4,6 +4,7 @@ namespace Ashrafic\FilamentAutomationBridge\Filament\Components;
 
 use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
 use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
+use Ashrafic\FilamentAutomationBridge\Exceptions\ConditionEvaluationException;
 use Ashrafic\FilamentAutomationBridge\Services\FieldSchemaAnalyzer;
 use Closure;
 use Filament\Forms\Components\Repeater;
@@ -103,7 +104,7 @@ class ConditionBuilder extends Repeater
                             if (! $operator->requiresValue()) {
                                 $component->getContainer()->getComponent('value')->state(null);
                             }
-                        } catch (\InvalidArgumentException) {
+                        } catch (ConditionEvaluationException) {
                         }
                     }),
                 TextInput::make('value')
@@ -119,7 +120,7 @@ class ConditionBuilder extends Repeater
 
                         try {
                             return $registry->get($operatorKey)->requiresValue();
-                        } catch (\InvalidArgumentException) {
+                        } catch (ConditionEvaluationException) {
                             return true;
                         }
                     }),

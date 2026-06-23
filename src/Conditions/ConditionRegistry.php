@@ -12,6 +12,7 @@ use Ashrafic\FilamentAutomationBridge\Conditions\Operators\IsNotEmptyOperator;
 use Ashrafic\FilamentAutomationBridge\Conditions\Operators\LessThanOperator;
 use Ashrafic\FilamentAutomationBridge\Conditions\Operators\NotEqualsOperator;
 use Ashrafic\FilamentAutomationBridge\Contracts\ConditionOperator;
+use Ashrafic\FilamentAutomationBridge\Exceptions\ConditionEvaluationException;
 
 class ConditionRegistry
 {
@@ -39,7 +40,7 @@ class ConditionRegistry
     public function get(string $key): ConditionOperator
     {
         if (! isset($this->operators[$key])) {
-            throw new \InvalidArgumentException("Condition operator [{$key}] not found.");
+            throw new ConditionEvaluationException("Condition operator [{$key}] not found.");
         }
 
         return $this->operators[$key];

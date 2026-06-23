@@ -158,7 +158,7 @@ class HistoricalSyncServiceTest extends TestCase
     {
         $trigger = $this->createTrigger(['model_class' => 'App\\Models\\NonExistent']);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(\Ashrafic\FilamentAutomationBridge\Exceptions\ModelNotFoundException::class);
         $this->service->startSync($trigger);
     }
 

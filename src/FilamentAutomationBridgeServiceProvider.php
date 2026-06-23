@@ -14,6 +14,7 @@ use Ashrafic\FilamentAutomationBridge\Formatters\MakeFormatter;
 use Ashrafic\FilamentAutomationBridge\Formatters\N8nFormatter;
 use Ashrafic\FilamentAutomationBridge\Formatters\ZapierFormatter;
 use Ashrafic\FilamentAutomationBridge\Listeners\AutomationEventSubscriber;
+use Ashrafic\FilamentAutomationBridge\Exceptions\DeliveryFailedException;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Ashrafic\FilamentAutomationBridge\Services\DeliveryService;
@@ -210,7 +211,7 @@ class FilamentAutomationBridgeServiceProvider extends PackageServiceProvider
                 $delivery = AutomationDelivery::where('uuid', $event->uuid ?? '')->first();
 
                 if ($delivery) {
-                    app(DeliveryService::class)->handleSpatieFailure($delivery, new \RuntimeException($event->errorMessage ?? 'Automation call failed'));
+                    app(DeliveryService::class)->handleSpatieFailure($delivery, new DeliveryFailedException($event->errorMessage ?? 'Automation call failed'));
                 }
             });
         }

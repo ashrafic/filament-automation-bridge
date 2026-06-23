@@ -6,6 +6,7 @@ use Ashrafic\FilamentAutomationBridge\Enums\DeliverySource;
 use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
 use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Events\HistoricalSyncCompleted;
+use Ashrafic\FilamentAutomationBridge\Exceptions\ModelNotFoundException;
 use Ashrafic\FilamentAutomationBridge\Jobs\ProcessHistoricalSyncBatch;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
@@ -41,7 +42,7 @@ class HistoricalSyncService
         $modelClass = $trigger->model_class;
 
         if (! class_exists($modelClass)) {
-            throw new \InvalidArgumentException("Model class [{$modelClass}] does not exist.");
+            throw ModelNotFoundException::forClass($modelClass);
         }
 
         $lockKey = "automation_bridge.sync.lock.{$trigger->id}";

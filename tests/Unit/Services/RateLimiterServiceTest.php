@@ -2,7 +2,7 @@
 
 namespace Ashrafic\FilamentAutomationBridge\Tests\Unit\Services;
 
-use Ashrafic\FilamentAutomationBridge\Exceptions\DeliveryFailedException;
+use Ashrafic\FilamentAutomationBridge\Exceptions\RateLimitException;
 use Ashrafic\FilamentAutomationBridge\Services\RateLimiterService;
 use Ashrafic\FilamentAutomationBridge\Tests\TestCase;
 
@@ -30,7 +30,7 @@ class RateLimiterServiceTest extends TestCase
         $this->service->throttle('https://example.com/webhook');
         $this->service->throttle('https://example.com/webhook');
 
-        $this->expectException(DeliveryFailedException::class);
+        $this->expectException(RateLimitException::class);
         $this->service->throttle('https://example.com/webhook');
     }
 

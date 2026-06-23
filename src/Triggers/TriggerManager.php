@@ -3,8 +3,8 @@
 namespace Ashrafic\FilamentAutomationBridge\Triggers;
 
 use Ashrafic\FilamentAutomationBridge\Contracts\TriggerContract;
+use Ashrafic\FilamentAutomationBridge\Exceptions\TriggerNotFoundException;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
-use RuntimeException;
 
 class TriggerManager
 {
@@ -28,7 +28,7 @@ class TriggerManager
     public function get(string $type): TriggerContract
     {
         if (! isset($this->triggers[$type])) {
-            throw new RuntimeException("Unknown trigger type: {$type}");
+            throw new TriggerNotFoundException($type);
         }
 
         return $this->triggers[$type];

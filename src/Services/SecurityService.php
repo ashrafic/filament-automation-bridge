@@ -2,6 +2,7 @@
 
 namespace Ashrafic\FilamentAutomationBridge\Services;
 
+use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
 use Ashrafic\FilamentAutomationBridge\Exceptions\SecurityException;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
@@ -10,10 +11,16 @@ use Illuminate\Support\Str;
 
 class SecurityService
 {
-    public function sign(array $payload, ?string $secret): array
+    public function sign(array $payload, ?string $secret, ?DestinationType $destinationType = null): array
     {
         if ($secret === null) {
             return [];
+        }
+
+        if ($destinationType === DestinationType::Make) {
+            return [
+                'x-make-apikey' => $secret,
+            ];
         }
 
         $timestamp = time();
@@ -123,7 +130,7 @@ class SecurityService
     public function buildHeaders(AutomationTrigger $trigger, AutomationDelivery $delivery): array
     {
         $payload = $delivery->payload ?? [];
-        $signHeaders = $this->sign($payload, $trigger->secret);
+        $signHeaders = $this->sign($payload, $trigger->secret, $trigger->destination_type);
 
         $headers = [
             'Content-Type' => 'application/json',

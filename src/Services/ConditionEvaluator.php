@@ -4,6 +4,7 @@ namespace Ashrafic\FilamentAutomationBridge\Services;
 
 use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
 use Ashrafic\FilamentAutomationBridge\Contracts\ConditionOperator;
+use Ashrafic\FilamentAutomationBridge\Exceptions\ConditionEvaluationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
@@ -51,7 +52,7 @@ class ConditionEvaluator
 
         try {
             $operator = $this->registry->get($operatorKey);
-        } catch (\InvalidArgumentException $e) {
+        } catch (ConditionEvaluationException $e) {
             Log::warning('ConditionEvaluator: unknown operator', [
                 'operator' => $operatorKey,
             ]);

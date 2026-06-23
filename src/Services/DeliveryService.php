@@ -8,6 +8,7 @@ use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
 use Ashrafic\FilamentAutomationBridge\Events\AutomationDispatched;
 use Ashrafic\FilamentAutomationBridge\Exceptions\DeliveryFailedException;
+use Ashrafic\FilamentAutomationBridge\Exceptions\RateLimitException;
 use Ashrafic\FilamentAutomationBridge\Jobs\ProcessAutomationDelivery;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationDelivery;
 use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
@@ -57,7 +58,7 @@ class DeliveryService
 
         $payload['context'] = array_merge($payload['context'] ?? [], $context);
 
-        $headers = $this->securityService->sign($payload, $trigger->secret);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type);
 
         $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
@@ -84,8 +85,8 @@ class DeliveryService
         }
 
         try {
-            $this->rateLimiterService->throttle($trigger->destination_url);
-        } catch (DeliveryFailedException $e) {
+            $this->rateLimiterService->throttle($trigger->destination_url, $trigger);
+        } catch (RateLimitException $e) {
             $delivery->markFailed(0, null, $e->getMessage(), null);
 
             Log::warning('DeliveryService: rate limited', [
@@ -177,7 +178,7 @@ class DeliveryService
             return null;
         }
 
-        $headers = $this->securityService->sign($payload, $trigger->secret);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type);
 
         $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
@@ -204,8 +205,8 @@ class DeliveryService
         }
 
         try {
-            $this->rateLimiterService->throttle($trigger->destination_url);
-        } catch (DeliveryFailedException $e) {
+            $this->rateLimiterService->throttle($trigger->destination_url, $trigger);
+        } catch (RateLimitException $e) {
             $delivery->markFailed(0, null, $e->getMessage(), null);
 
             Log::warning('DeliveryService: rate limited (generic)', [
@@ -348,7 +349,7 @@ class DeliveryService
     public function retry(AutomationDelivery $delivery): AutomationDelivery
     {
         if (! $delivery->canRetry()) {
-            throw new \RuntimeException('Delivery cannot be retried.');
+            throw new DeliveryFailedException('Delivery cannot be retried.');
         }
 
         $trigger = $delivery->trigger;
@@ -417,7 +418,7 @@ class DeliveryService
     {
         $payload = $this->payloadBuilder->buildSample($trigger);
 
-        $headers = $this->securityService->sign($payload, $trigger->secret);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type);
 
         $allHeaders = array_merge([
             'Content-Type' => 'application/json',

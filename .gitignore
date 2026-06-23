@@ -43,3 +43,6 @@ phpunit.xml
 *.swp
 *.swo
 *~
+
+AGENTS.md
+scripts/

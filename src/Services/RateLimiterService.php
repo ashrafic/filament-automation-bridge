@@ -2,19 +2,23 @@
 
 namespace Ashrafic\FilamentAutomationBridge\Services;
 
-use Ashrafic\FilamentAutomationBridge\Exceptions\DeliveryFailedException;
+use Ashrafic\FilamentAutomationBridge\Events\RateLimitHit;
+use Ashrafic\FilamentAutomationBridge\Exceptions\RateLimitException;
+use Ashrafic\FilamentAutomationBridge\Models\AutomationTrigger;
 use Illuminate\Support\Facades\RateLimiter;
 
 class RateLimiterService
 {
-    public function throttle(string $destinationUrl): void
+    public function throttle(string $destinationUrl, ?AutomationTrigger $trigger = null): void
     {
         $hostname = $this->getHostname($destinationUrl);
         $key = "automation-bridge:{$hostname}";
         $maxRequestsPerMinute = config('filament-automation-bridge.rate_limiting.max_requests_per_minute', 60);
 
         if (RateLimiter::tooManyAttempts($key, $maxRequestsPerMinute)) {
-            throw new DeliveryFailedException("Rate limit exceeded for host: {$hostname}. Please retry later.");
+            event(new RateLimitHit($hostname, $trigger));
+
+            throw new RateLimitException($hostname, $maxRequestsPerMinute);
         }
 
         RateLimiter::hit($key);

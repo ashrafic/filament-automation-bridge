@@ -6,6 +6,9 @@ use Ashrafic\FilamentAutomationBridge\Enums\DeliveryStatus;
 use Ashrafic\FilamentAutomationBridge\Enums\DestinationType;
 use Ashrafic\FilamentAutomationBridge\Enums\EventEnum;
 use Ashrafic\FilamentAutomationBridge\Enums\PayloadMode;
+use Ashrafic\FilamentAutomationBridge\Events\TriggerActivated;
+use Ashrafic\FilamentAutomationBridge\Events\TriggerChanged;
+use Ashrafic\FilamentAutomationBridge\Events\TriggerDeactivated;
 use Ashrafic\FilamentAutomationBridge\Triggers\TriggerManager;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -105,6 +108,18 @@ class AutomationTrigger extends Model
                 Cache::forget("automation_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
             }
 
+            $action = $trigger->wasRecentlyCreated ? 'created' : 'updated';
+
+            event(new TriggerChanged($trigger, $action));
+
+            if ($trigger->wasChanged('active')) {
+                if ($trigger->active) {
+                    event(new TriggerActivated($trigger));
+                } else {
+                    event(new TriggerDeactivated($trigger));
+                }
+            }
+
             if ($trigger->trigger_type !== null && $trigger->active && ! $trigger->isTriggerType('model-event')) {
                 app(TriggerManager::class)->subscribe($trigger);
             }
@@ -114,6 +129,8 @@ class AutomationTrigger extends Model
             if ($trigger->event !== null) {
                 Cache::forget("automation_bridge.triggers.{$trigger->model_class}.{$trigger->event->value}");
             }
+
+            event(new TriggerChanged($trigger, 'deleted'));
 
             if ($trigger->trigger_type !== null && ! $trigger->isTriggerType('model-event')) {
                 app(TriggerManager::class)->unsubscribe($trigger);

@@ -6,6 +6,7 @@ use Ashrafic\FilamentAutomationBridge\Conditions\ConditionRegistry;
 use Ashrafic\FilamentAutomationBridge\Conditions\Operators\ContainsOperator;
 use Ashrafic\FilamentAutomationBridge\Conditions\Operators\EqualsOperator;
 use Ashrafic\FilamentAutomationBridge\Contracts\ConditionOperator;
+use Ashrafic\FilamentAutomationBridge\Exceptions\ConditionEvaluationException;
 use PHPUnit\Framework\TestCase;
 
 class ConditionRegistryTest extends TestCase
@@ -46,7 +47,7 @@ class ConditionRegistryTest extends TestCase
 
     public function test_throws_for_unknown_key(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ConditionEvaluationException::class);
         $this->expectExceptionMessage('Condition operator [unknown] not found.');
 
         $this->registry->get('unknown');
