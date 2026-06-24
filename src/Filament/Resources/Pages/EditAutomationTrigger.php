@@ -24,20 +24,20 @@ class EditAutomationTrigger extends EditRecord
             DeleteAction::make(),
 
             Action::make('test_connection')
-                ->label('Test Connection')
+                ->label(__('filament-automation-bridge::automation-bridge.actions.test_connection'))
                 ->icon('heroicon-o-signal')
                 ->action(function () {
                     $result = app(DeliveryService::class)->testConnection($this->record);
 
                     if ($result['success']) {
                         Notification::make()
-                            ->title('Connection successful')
+                            ->title(__('filament-automation-bridge::automation-bridge.notifications.connection_successful_title'))
                             ->body("HTTP {$result['http_status']} — {$result['duration_ms']}ms")
                             ->success()
                             ->send();
                     } else {
                         Notification::make()
-                            ->title('Connection failed')
+                            ->title(__('filament-automation-bridge::automation-bridge.notifications.connection_failed_title'))
                             ->body($result['error'] ?? "HTTP {$result['http_status']}")
                             ->danger()
                             ->send();
@@ -45,15 +45,15 @@ class EditAutomationTrigger extends EditRecord
                 }),
 
             Action::make('save_as_template')
-                ->label('Save as Template')
+                ->label(__('filament-automation-bridge::automation-bridge.actions.save_as_template'))
                 ->icon('heroicon-o-bookmark')
                 ->form([
                     TextInput::make('template_name')
-                        ->label('Template Name')
+                        ->label(__('filament-automation-bridge::automation-bridge.actions.template_name'))
                         ->required()
                         ->default($this->record->name),
                     Textarea::make('template_description')
-                        ->label('Description')
+                        ->label(__('filament-automation-bridge::automation-bridge.form.description'))
                         ->rows(2),
                 ])
                 ->action(function (array $data) {
@@ -64,8 +64,8 @@ class EditAutomationTrigger extends EditRecord
                     );
 
                     Notification::make()
-                        ->title('Template saved')
-                        ->body("Saved as \"{$data['template_name']}\"")
+                        ->title(__('filament-automation-bridge::automation-bridge.notifications.template_saved'))
+                        ->body(__('filament-automation-bridge::automation-bridge.notifications.template_saved_body', ['name' => $data['template_name']]))
                         ->success()
                         ->send();
                 }),

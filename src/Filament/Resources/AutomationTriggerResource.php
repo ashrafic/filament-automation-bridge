@@ -66,28 +66,28 @@ class AutomationTriggerResource extends Resource
     {
         return $schema
             ->schema([
-                Section::make('When this happens...')
-                    ->description('Choose the model and event that triggers this automation')
+                Section::make(__('filament-automation-bridge::automation-bridge.form.sections.trigger'))
+                    ->description(__('filament-automation-bridge::automation-bridge.form.sections.trigger_description'))
                     ->icon('heroicon-o-bolt')
                     ->collapsible()
                     ->schema(function (Get $get) {
                         $schema = [
                             Forms\Components\Select::make('model_class')
-                                ->label('Model')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.model'))
                                 ->options(fn () => app(ModelDiscoveryService::class)->getAllModels())
                                 ->searchable()
                                 ->required()
                                 ->live()
                                 ->disabled(fn (string $operation) => $operation === 'edit' && ! request()->boolean('duplicate'))
-                                ->placeholder('Choose a model...')
-                                ->helperText('The Eloquent model to watch for events'),
+                                ->placeholder(__('filament-automation-bridge::automation-bridge.form.model_placeholder'))
+                                ->helperText(__('filament-automation-bridge::automation-bridge.form.model_helper')),
                             Forms\Components\Select::make('trigger_type')
-                                ->label('Trigger Type')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.trigger_type'))
                                 ->options(fn () => app(TriggerManager::class)->options())
                                 ->default('model-event')
                                 ->required()
                                 ->live()
-                                ->helperText('How should this automation fire?')
+                                ->helperText(__('filament-automation-bridge::automation-bridge.form.trigger_type_helper'))
                                 ->afterStateUpdated(function (callable $set) {
                                     $set('event', null);
                                     $set('trigger_config', []);
@@ -98,11 +98,11 @@ class AutomationTriggerResource extends Resource
 
                         if ($triggerType === 'model-event') {
                             $schema[] = Forms\Components\Select::make('event')
-                                ->label('On Event')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.event'))
                                 ->options(EventEnum::class)
                                 ->required()
                                 ->live()
-                                ->helperText('Which model event triggers this?');
+                                ->helperText(__('filament-automation-bridge::automation-bridge.form.event_helper'));
                         }
 
                         $triggerManager = app(TriggerManager::class);
@@ -135,28 +135,28 @@ class AutomationTriggerResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->helperText('A descriptive name to identify this automation');
+                            ->helperText(__('filament-automation-bridge::automation-bridge.form.name_helper'));
 
                         $schema[] = Forms\Components\Textarea::make('description')
                             ->maxLength(1000)
                             ->rows(2)
                             ->columnSpanFull()
-                            ->helperText('Optional notes about what this automation does');
+                            ->helperText(__('filament-automation-bridge::automation-bridge.form.description_helper'));
 
                         return $schema;
                     })
                     ->columns(2)
                     ->extraAttributes(['class' => '!mb-6']),
 
-                Section::make('Only if these conditions match')
-                    ->description('Add rules to filter when this automation should fire (skip to always run)')
+                Section::make(__('filament-automation-bridge::automation-bridge.form.sections.conditions'))
+                    ->description(__('filament-automation-bridge::automation-bridge.form.sections.conditions_description'))
                     ->icon('heroicon-o-funnel')
                     ->collapsible()
                     ->collapsed(fn ($state) => empty(data_get($state, 'conditions')))
                     ->schema([
                         Forms\Components\Repeater::make('conditions')
                             ->label('')
-                            ->addActionLabel('Add Condition')
+                            ->addActionLabel(__('filament-automation-bridge::automation-bridge.form.add_condition'))
                             ->schema([
                                 Forms\Components\Select::make('field')
                                 ->options(function (Get $get) {
@@ -176,28 +176,28 @@ class AutomationTriggerResource extends Resource
                                             ->toArray();
                                     })
                                     ->required()
-                                    ->placeholder('Field'),
+                                    ->placeholder(__('filament-automation-bridge::automation-bridge.form.condition_field_placeholder')),
                                 Forms\Components\Select::make('operator')
                                     ->options([
-                                        'equals' => 'Equals',
-                                        'not_equals' => 'Not Equals',
-                                        'contains' => 'Contains',
-                                        'greater_than' => 'Greater Than',
-                                        'less_than' => 'Less Than',
-                                        'is_empty' => 'Is Empty',
-                                        'is_not_empty' => 'Is Not Empty',
-                                        'changed' => 'Changed',
-                                        'changed_to' => 'Changed To',
+                                        'equals' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.equals'),
+                                        'not_equals' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.not_equals'),
+                                        'contains' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.contains'),
+                                        'greater_than' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.greater_than'),
+                                        'less_than' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.less_than'),
+                                        'is_empty' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.is_empty'),
+                                        'is_not_empty' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.is_not_empty'),
+                                        'changed' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.changed'),
+                                        'changed_to' => __('filament-automation-bridge::automation-bridge.enums.condition_operators.changed_to'),
                                     ])
                                     ->required()
-                                    ->placeholder('Operator'),
+                                    ->placeholder(__('filament-automation-bridge::automation-bridge.form.condition_operator_placeholder')),
                                 Forms\Components\TextInput::make('value')
-                                    ->placeholder('Value')
+                                    ->placeholder(__('filament-automation-bridge::automation-bridge.form.condition_value_placeholder'))
                                     ->visible(fn (Get $get) => ! in_array($get('operator'), ['is_empty', 'is_not_empty', 'changed'])),
                                 Forms\Components\Select::make('logic')
                                     ->options([
-                                        'AND' => 'AND',
-                                        'OR' => 'OR',
+                                        'AND' => __('filament-automation-bridge::automation-bridge.enums.condition_logic.and'),
+                                        'OR' => __('filament-automation-bridge::automation-bridge.enums.condition_logic.or'),
                                     ])
                                     ->default('and')
                                     ->visible(fn (Get $get, string $context) => $context === 'edit'),
@@ -208,8 +208,8 @@ class AutomationTriggerResource extends Resource
                     ])
                     ->extraAttributes(['class' => '!mb-6']),
 
-                Section::make('Then send data to...')
-                    ->description('Choose your automation platform and configure the payload')
+                Section::make(__('filament-automation-bridge::automation-bridge.form.sections.destination'))
+                    ->description(__('filament-automation-bridge::automation-bridge.form.sections.destination_description'))
                     ->icon('heroicon-o-paper-airplane')
                     ->collapsible()
                     ->schema(function (Get $get) {
@@ -217,26 +217,26 @@ class AutomationTriggerResource extends Resource
 
                         return [
                             Forms\Components\Select::make('destination_type')
-                                ->label('Destination')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.destination_type'))
                                 ->options(DestinationType::class)
                                 ->required()
                                 ->live()
-                                ->helperText('Zapier, Make, n8n, or any custom webhook endpoint'),
+                                ->helperText(__('filament-automation-bridge::automation-bridge.form.destination_type_helper')),
                             Forms\Components\TextInput::make('destination_url')
-                                ->label('Webhook URL')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.destination_url'))
                                 ->url()
                                 ->required()
                                 ->maxLength(2048)
-                                ->placeholder('https://hooks.zapier.com/...')
-                                ->helperText('Paste the webhook URL from your automation platform'),
+                                ->placeholder(__('filament-automation-bridge::automation-bridge.form.destination_url_placeholder'))
+                                ->helperText(__('filament-automation-bridge::automation-bridge.form.destination_url_helper')),
                             Forms\Components\Select::make('payload_mode')
-                                ->label('Payload Mode')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.payload_mode'))
                                 ->options(PayloadMode::class)
                                 ->required()
                                 ->default(PayloadMode::Summary->value)
                                 ->live(),
                             Forms\Components\Select::make('field_mapping')
-                                ->label('Include Fields (for Summary mode)')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.field_mapping'))
                                 ->multiple()
                                 ->searchable()
                                 ->hidden(fn (Get $get) => $get('payload_mode')?->value !== PayloadMode::Summary->value)
@@ -260,40 +260,40 @@ class AutomationTriggerResource extends Resource
                                 })
                                 ->columnSpanFull(),
                             Forms\Components\Textarea::make('custom_payload_template')
-                                ->label('Custom Payload Template (for Custom mode)')
+                                ->label(__('filament-automation-bridge::automation-bridge.form.custom_payload_template'))
                                 ->rows(6)
-                                ->placeholder('{"event": "{{ event }}", "data": {{ payload | json }}}')
+                                ->placeholder(__('filament-automation-bridge::automation-bridge.form.custom_payload_template_placeholder'))
                                 ->hidden(fn (Get $get) => $get('payload_mode')?->value !== PayloadMode::Custom->value)
                                 ->dehydratedWhenHidden()
                                 ->columnSpanFull()
-                                ->helperText('Use {{ field }} for model attributes. Example: {"event": "{{ event }}", "name": "{{ name }}"}'),
+                                ->helperText(__('filament-automation-bridge::automation-bridge.form.custom_payload_template_helper')),
                         ];
                     })
                     ->columns(2)
                     ->extraAttributes(['class' => '!mb-6']),
 
-                Section::make('Settings')
-                    ->description('Name, security, and behavior for this automation')
+                Section::make(__('filament-automation-bridge::automation-bridge.form.sections.settings'))
+                    ->description(__('filament-automation-bridge::automation-bridge.form.sections.settings_description'))
                     ->icon('heroicon-o-cog-6-tooth')
                     ->collapsible()
                     ->collapsed()
                     ->schema([
                         Forms\Components\Toggle::make('active')
-                            ->label('Active')
+                            ->label(__('filament-automation-bridge::automation-bridge.form.active'))
                             ->default(true)
-                            ->helperText('Enable or disable this automation'),
+                            ->helperText(__('filament-automation-bridge::automation-bridge.form.active_helper')),
                         Forms\Components\Select::make('http_method')
-                            ->label('HTTP Method')
+                            ->label(__('filament-automation-bridge::automation-bridge.form.http_method'))
                             ->options([
-                                'GET' => 'GET',
-                                'POST' => 'POST',
-                                'PUT' => 'PUT',
-                                'PATCH' => 'PATCH',
-                                'DELETE' => 'DELETE',
+                                'GET' => __('filament-automation-bridge::automation-bridge.enums.http_methods.GET'),
+                                'POST' => __('filament-automation-bridge::automation-bridge.enums.http_methods.POST'),
+                                'PUT' => __('filament-automation-bridge::automation-bridge.enums.http_methods.PUT'),
+                                'PATCH' => __('filament-automation-bridge::automation-bridge.enums.http_methods.PATCH'),
+                                'DELETE' => __('filament-automation-bridge::automation-bridge.enums.http_methods.DELETE'),
                             ])
                             ->default('POST')
                             ->required()
-                            ->helperText('The HTTP method used to send data to the webhook'),
+                            ->helperText(__('filament-automation-bridge::automation-bridge.form.http_method_helper')),
                         Forms\Components\TextInput::make('secret')
                             ->password()
                             ->revealable()
@@ -304,61 +304,61 @@ class AutomationTriggerResource extends Resource
                                 $n8nMode = $get('trigger_config.n8n_auth_mode');
 
                                 if ($type?->value === 'make') {
-                                    return 'sk-...';
+                                    return __('filament-automation-bridge::automation-bridge.form.secret_placeholder_make');
                                 }
 
                                 if ($type?->value === 'n8n') {
                                     return match ($n8nMode) {
-                                        'basic' => 'username:password',
-                                        'bearer' => 'eyJhbGci...',
-                                        default => 'x-api-key-abc123',
+                                        'basic' => __('filament-automation-bridge::automation-bridge.form.secret_placeholder_n8n_basic'),
+                                        'bearer' => __('filament-automation-bridge::automation-bridge.form.secret_placeholder_n8n_bearer'),
+                                        default => __('filament-automation-bridge::automation-bridge.form.secret_placeholder_n8n_header'),
                                     };
                                 }
 
-                                return 'Auto-generated if left blank';
+                                return __('filament-automation-bridge::automation-bridge.form.secret_placeholder');
                             })
                             ->helperText(function (Get $get) {
                                 $type = $get('destination_type');
                                 $n8nMode = $get('trigger_config.n8n_auth_mode');
 
                                 if ($type?->value === 'make') {
-                                    return 'Your Make.com API key — sent as x-make-apikey header';
+                                    return __('filament-automation-bridge::automation-bridge.form.secret_helper_make');
                                 }
 
                                 if ($type?->value === 'n8n') {
                                     return match ($n8nMode) {
-                                        'basic' => 'Format: username:password — sent as Basic auth',
-                                        'bearer' => 'Your JWT or Bearer token — sent as Authorization: Bearer',
-                                        default => 'Your API key — sent as X-Api-Key header',
+                                        'basic' => __('filament-automation-bridge::automation-bridge.form.secret_helper_n8n_basic'),
+                                        'bearer' => __('filament-automation-bridge::automation-bridge.form.secret_helper_n8n_bearer'),
+                                        default => __('filament-automation-bridge::automation-bridge.form.secret_helper_n8n_header'),
                                     };
                                 }
 
-                                return 'HMAC secret for payload signing (auto-generated if empty)';
+                                return __('filament-automation-bridge::automation-bridge.form.secret_helper_default');
                             }),
                         Forms\Components\Select::make('trigger_config.n8n_auth_mode')
-                            ->label('n8n Auth Mode')
+                            ->label(__('filament-automation-bridge::automation-bridge.form.n8n_auth_mode'))
                             ->options([
-                                'header' => 'API Key (Header Auth)',
-                                'basic' => 'Basic Auth (username:password)',
-                                'bearer' => 'Bearer Token',
+                                'header' => __('filament-automation-bridge::automation-bridge.form.n8n_auth_mode_header'),
+                                'basic' => __('filament-automation-bridge::automation-bridge.form.n8n_auth_mode_basic'),
+                                'bearer' => __('filament-automation-bridge::automation-bridge.form.n8n_auth_mode_bearer'),
                             ])
                             ->default('header')
                             ->live()
                             ->visible(fn (Get $get) => $get('destination_type')?->value === 'n8n')
-                            ->helperText('How the secret will be sent. Set to None by leaving secret blank.'),
+                            ->helperText(__('filament-automation-bridge::automation-bridge.form.n8n_auth_mode_helper')),
                         Forms\Components\TextInput::make('trigger_config.n8n_header_name')
-                            ->label('Header Name')
+                            ->label(__('filament-automation-bridge::automation-bridge.form.n8n_header_name'))
                             ->default('X-Api-Key')
                             ->visible(fn (Get $get) => in_array($get('trigger_config.n8n_auth_mode'), ['header', null]) && $get('destination_type')?->value === 'n8n')
-                            ->helperText('Custom header name for Header Auth (e.g. X-Api-Key, Authorization)'),
+                            ->helperText(__('filament-automation-bridge::automation-bridge.form.n8n_header_name_helper')),
                         Forms\Components\TextInput::make('request_timeout')
-                            ->label('Timeout (seconds)')
+                            ->label(__('filament-automation-bridge::automation-bridge.form.request_timeout'))
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(30)
                             ->default(30),
                         Forms\Components\TextInput::make('max_retries')
-                            ->label('Max Retries')
+                            ->label(__('filament-automation-bridge::automation-bridge.form.max_retries'))
                             ->numeric()
                             ->minValue(0)
                             ->maxValue(5)
@@ -373,11 +373,12 @@ class AutomationTriggerResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.name'))
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
                 Tables\Columns\TextColumn::make('model_class')
-                    ->label('Model')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.model'))
                     ->formatStateUsing(fn ($state) => class_basename($state))
                     ->searchable()
                     ->sortable(),
@@ -393,30 +394,30 @@ class AutomationTriggerResource extends Resource
                     })
                     ->formatStateUsing(fn ($state) => $state instanceof EventEnum ? $state->getLabel() : $state),
                 Tables\Columns\TextColumn::make('destination_type')
-                    ->label('Destination')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.destination'))
                     ->badge()
                     ->color('gray')
                     ->formatStateUsing(fn ($state) => $state instanceof DestinationType ? $state->getLabel() : $state),
                 Tables\Columns\ToggleColumn::make('active')
-                    ->label('Active')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.active'))
                     ->afterStateUpdated(function ($state) {
                         Notification::make()
-                            ->title($state ? 'Trigger activated' : 'Trigger deactivated')
+                            ->title($state ? __('filament-automation-bridge::automation-bridge.notifications.activated') : __('filament-automation-bridge::automation-bridge.notifications.deactivated'))
                             ->success()
                             ->send();
                     }),
                 Tables\Columns\TextColumn::make('last_delivered_at')
-                    ->label('Last Delivered')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.last_delivered'))
                     ->dateTime()
-                    ->placeholder('Never')
+                    ->placeholder(__('filament-automation-bridge::automation-bridge.table.never'))
                     ->getStateUsing(fn (AutomationTrigger $record) => $record->deliveries()->latest('created_at')->value('created_at')),
                 Tables\Columns\TextColumn::make('success_rate')
-                    ->label('Success Rate')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.success_rate'))
                     ->getStateUsing(function (AutomationTrigger $record) {
                         $stats = $record->successRateLast7Days();
 
                         if ($stats['total'] === 0) {
-                            return 'N/A';
+                            return __('filament-automation-bridge::automation-bridge.table.na');
                         }
 
                         return round(($stats['success'] / $stats['total']) * 100, 1).'%';
@@ -441,21 +442,22 @@ class AutomationTriggerResource extends Resource
                         return 'danger';
                     }),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('model_class')
-                    ->label('Model')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.model'))
                     ->options(fn () => app(ModelDiscoveryService::class)->getAllModels()),
                 Tables\Filters\SelectFilter::make('event')
                     ->options(EventEnum::class),
                 Tables\Filters\SelectFilter::make('destination_type')
-                    ->label('Destination Type')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.destination_type'))
                     ->options(DestinationType::class),
                 Tables\Filters\TernaryFilter::make('active')
-                    ->label('Active'),
+                    ->label(__('filament-automation-bridge::automation-bridge.table.active')),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from'),
@@ -474,20 +476,20 @@ class AutomationTriggerResource extends Resource
                     ->requiresConfirmation()
                     ->action(function (AutomationTrigger $record, Actions\Action $action) {
                         $replica = $record->replicate();
-                        $replica->name = $record->name.' (Copy)';
+                        $replica->name = $record->name.__('filament-automation-bridge::automation-bridge.actions.copy');
                         $replica->active = false;
                         $replica->secret = AutomationTrigger::generateSecret();
                         $replica->save();
 
                         Notification::make()
-                            ->title('Trigger duplicated')
+                            ->title(__('filament-automation-bridge::automation-bridge.notifications.duplicated'))
                             ->success()
                             ->send();
 
                         return redirect(static::getUrl('edit', ['record' => $replica]).'?duplicate=1');
                     }),
                 Actions\Action::make('view_logs')
-                    ->label('Delivery Logs')
+                    ->label(__('filament-automation-bridge::automation-bridge.actions.view_logs'))
                     ->icon('heroicon-o-document-text')
                     ->url('#')
                     ->visible(false),
@@ -499,24 +501,24 @@ class AutomationTriggerResource extends Resource
             ->toolbarActions([
                 Actions\DeleteBulkAction::make(),
                 Actions\BulkAction::make('bulk_enable')
-                    ->label('Enable')
+                    ->label(__('filament-automation-bridge::automation-bridge.actions.enable'))
                     ->icon('heroicon-o-check-circle')
                     ->action(function (Collection $records) {
                         $records->each->update(['active' => true]);
 
                         Notification::make()
-                            ->title('Selected triggers enabled')
+                            ->title(__('filament-automation-bridge::automation-bridge.notifications.enabled'))
                             ->success()
                             ->send();
                     }),
                 Actions\BulkAction::make('bulk_disable')
-                    ->label('Disable')
+                    ->label(__('filament-automation-bridge::automation-bridge.actions.disable'))
                     ->icon('heroicon-o-x-circle')
                     ->action(function (Collection $records) {
                         $records->each->update(['active' => false]);
 
                         Notification::make()
-                            ->title('Selected triggers disabled')
+                            ->title(__('filament-automation-bridge::automation-bridge.notifications.disabled'))
                             ->success()
                             ->send();
                     }),

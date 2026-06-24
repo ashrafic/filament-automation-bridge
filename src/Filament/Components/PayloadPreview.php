@@ -68,7 +68,7 @@ class PayloadPreview extends Component
                     $destinationType = $component->getDestinationType();
 
                     if (! $modelClass || ! class_exists($modelClass)) {
-                        return ['json' => '// Select a model to see a payload preview', 'destination' => null];
+                        return ['json' => __('filament-automation-bridge::automation-bridge.form.payload_preview_fallback'), 'destination' => null];
                     }
 
                     $trigger = new AutomationTrigger;
@@ -88,7 +88,7 @@ class PayloadPreview extends Component
                             $payload = $payloadBuilder->formatPayload($payload, $trigger->destination_type);
                         }
                     } catch (\Throwable $e) {
-                        $payload = ['error' => 'Unable to generate preview: '.$e->getMessage()];
+                        $payload = ['error' => __('filament-automation-bridge::automation-bridge.form.payload_preview_error').$e->getMessage()];
                     }
 
                     return [

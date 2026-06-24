@@ -57,7 +57,7 @@ class AutomationHealthWidget extends Widget
 
         if (! $delivery || ! $delivery->canRetry()) {
             Notification::make()
-                ->title('Cannot retry this delivery')
+                ->title(__('filament-automation-bridge::automation-bridge.notifications.cannot_retry'))
                 ->warning()
                 ->send();
 
@@ -68,12 +68,12 @@ class AutomationHealthWidget extends Widget
             app(DeliveryService::class)->retry($delivery);
 
             Notification::make()
-                ->title('Delivery retry queued')
+                ->title(__('filament-automation-bridge::automation-bridge.notifications.retry_queued'))
                 ->success()
                 ->send();
         } catch (\Throwable $e) {
             Notification::make()
-                ->title('Retry failed')
+                ->title(__('filament-automation-bridge::automation-bridge.notifications.retry_failed'))
                 ->body($e->getMessage())
                 ->danger()
                 ->send();

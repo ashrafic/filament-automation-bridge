@@ -3,51 +3,112 @@
 return [
 
     'navigation' => [
-        'group' => 'Integrations',
-        'triggers' => 'Automation Triggers',
+        'group' => 'Automation Bridge',
+        'triggers' => 'Triggers',
         'deliveries' => 'Delivery Logs',
+        'templates' => 'Templates',
         'health' => 'Automation Health',
     ],
 
     'labels' => [
-        'trigger' => 'Automation Trigger',
-        'triggers' => 'Automation Triggers',
+        'trigger' => 'Trigger',
+        'triggers' => 'Triggers',
         'delivery' => 'Delivery',
         'deliveries' => 'Delivery Logs',
-        'template' => 'Automation Template',
-        'templates' => 'Automation Templates',
+        'template' => 'Template',
+        'templates' => 'Templates',
     ],
 
     'form' => [
-        'trigger_configuration' => 'Trigger Configuration',
-        'payload_configuration' => 'Payload Configuration',
-        'conditions' => 'Conditions (Optional)',
-        'security_settings' => 'Security & Settings',
+        'sections' => [
+            'trigger' => 'When this happens...',
+            'trigger_description' => 'Choose the model and event that triggers this automation',
+            'conditions' => 'Only if these conditions match',
+            'conditions_description' => 'Add rules to filter when this automation should fire (skip to always run)',
+            'destination' => 'Then send data to...',
+            'destination_description' => 'Choose your automation platform and configure the payload',
+            'settings' => 'Settings',
+            'settings_description' => 'Name, security, and behavior for this automation',
+        ],
+
+        'model' => 'Model',
+        'model_placeholder' => 'Choose a model...',
+        'model_helper' => 'The Eloquent model to watch for events',
+
+        'trigger_type' => 'Trigger Type',
+        'trigger_type_helper' => 'How should this automation fire?',
+
+        'event' => 'On Event',
+        'event_helper' => 'Which model event triggers this?',
 
         'name' => 'Name',
-        'description' => 'Description',
-        'model' => 'Model',
-        'event' => 'Event',
-        'destination_type' => 'Destination Type',
-        'destination_url' => 'Destination URL',
-        'payload_mode' => 'Payload Mode',
-        'field_mapping' => 'Fields',
-        'custom_payload_template' => 'Custom Payload Template',
-        'conditions_field' => 'Conditions',
-        'active' => 'Active',
-        'secret' => 'Secret',
-        'request_timeout' => 'Timeout (seconds)',
-        'max_retries' => 'Max Retries',
-        'ip_whitelist' => 'IP Whitelist',
-        'encrypt_payload' => 'Encrypt Payload',
+        'name_helper' => 'A descriptive name to identify this automation',
 
+        'description' => 'Description',
+        'description_helper' => 'Optional notes about what this automation does',
+
+        'add_condition' => 'Add Condition',
         'condition_field' => 'Field',
+        'conditions' => 'Conditions',
+        'condition_field_placeholder' => 'Field',
         'condition_operator' => 'Operator',
+        'condition_operator_placeholder' => 'Operator',
         'condition_value' => 'Value',
+        'condition_value_placeholder' => 'Value',
         'condition_logic' => 'Logic',
 
-        'select_model' => 'Select a model',
-        'leave_blank_auto_generate' => 'Leave blank to auto-generate',
+        'destination_type' => 'Destination',
+        'destination_type_helper' => 'Zapier, Make, n8n, or any custom webhook endpoint',
+
+        'destination_url' => 'Webhook URL',
+        'destination_url_placeholder' => 'https://hooks.zapier.com/...',
+        'destination_url_helper' => 'Paste the webhook URL from your automation platform',
+
+        'payload_mode' => 'Payload Mode',
+
+        'field_mapping' => 'Include Fields (for Summary mode)',
+
+        'custom_payload_template' => 'Custom Payload Template (for Custom mode)',
+        'custom_payload_template_placeholder' => '{"event": "{{ event }}", "data": {{ payload | json }}}',
+        'custom_payload_template_helper' => 'Use {{ field }} for model attributes. Example: {"event": "{{ event }}", "name": "{{ name }}"}',
+
+        'active' => 'Active',
+        'active_helper' => 'Enable or disable this automation',
+
+        'http_method' => 'HTTP Method',
+        'http_method_helper' => 'The HTTP method used to send data to the webhook',
+
+        'secret' => 'Secret',
+        'secret_placeholder' => 'Auto-generated if left blank',
+        'secret_placeholder_make' => 'sk-...',
+        'secret_placeholder_n8n_basic' => 'username:password',
+        'secret_placeholder_n8n_bearer' => 'eyJhbGci...',
+        'secret_placeholder_n8n_header' => 'x-api-key-abc123',
+        'secret_helper_make' => 'Your Make.com API key — sent as x-make-apikey header',
+        'secret_helper_n8n_basic' => 'Format: username:password — sent as Basic auth',
+        'secret_helper_n8n_bearer' => 'Your JWT or Bearer token — sent as Authorization: Bearer',
+        'secret_helper_n8n_header' => 'Your API key — sent as X-Api-Key header',
+        'secret_helper_default' => 'HMAC secret for payload signing (auto-generated if empty)',
+
+        'n8n_auth_mode' => 'n8n Auth Mode',
+        'n8n_auth_mode_header' => 'API Key (Header Auth)',
+        'n8n_auth_mode_basic' => 'Basic Auth (username:password)',
+        'n8n_auth_mode_bearer' => 'Bearer Token',
+        'n8n_auth_mode_helper' => 'How the secret will be sent. Set to None by leaving secret blank.',
+
+        'n8n_header_name' => 'Header Name',
+        'n8n_header_name_helper' => 'Custom header name for Header Auth (e.g. X-Api-Key, Authorization)',
+
+        'request_timeout' => 'Timeout (seconds)',
+
+        'max_retries' => 'Max Retries',
+
+        'no_model_selected' => 'No Model Selected',
+        'select_model_first' => 'Select a model first to configure field mapping.',
+        'all_fields' => ' (all fields)',
+
+        'payload_preview_fallback' => '// Select a model to see a payload preview',
+        'payload_preview_error' => 'Unable to generate preview: ',
     ],
 
     'table' => [
@@ -59,17 +120,24 @@ return [
         'last_delivered' => 'Last Delivered',
         'success_rate' => 'Success Rate',
         'created_at' => 'Created At',
+        'never' => 'Never',
+        'na' => 'N/A',
 
         'trigger' => 'Trigger',
-        'model_id' => 'Model ID',
+        'model_id' => 'ID: ',
+        'response' => 'Response',
         'status' => 'Status',
         'http_status' => 'HTTP Status',
         'source' => 'Source',
         'retries' => 'Retries',
         'duration' => 'Duration',
+        'duration_ms' => ' ms',
         'delivered_at' => 'Delivered At',
 
-        'never' => 'Never',
+        'destination_type' => 'Destination Type',
+
+        'empty_templates_heading' => 'No templates yet',
+        'empty_templates_description' => 'Save a trigger configuration as a template from the Edit or View page.',
     ],
 
     'actions' => [
@@ -77,24 +145,39 @@ return [
         'edit' => 'Edit',
         'delete' => 'Delete',
         'save' => 'Save',
-        'toggle_active' => 'Toggle Active',
         'activate' => 'Activate',
         'deactivate' => 'Deactivate',
         'duplicate' => 'Duplicate',
         'retry' => 'Retry',
         'test_connection' => 'Test Connection',
-        'sync' => 'Sync Historical',
         'view_details' => 'Details',
         'view_logs' => 'Delivery Logs',
-        'bulk_enable' => 'Enable',
-        'bulk_disable' => 'Disable',
-        'bulk_retry' => 'Retry Selected',
+        'enable' => 'Enable',
+        'disable' => 'Disable',
+        'retry_selected' => 'Retry Selected',
+        'use_template' => 'Use Template',
+        'close' => 'Close',
+        'copy' => ' (Copy)',
+        'send_automation' => 'Send Automation',
+        'select_automation_trigger' => 'Select Automation Trigger',
+        'save_as_template' => 'Save as Template',
+        'template_name' => 'Template Name',
+        'create_from_template' => 'Create from Template',
+        'template' => 'Template',
+
+        'test_connection_modal_heading' => 'Test Connection',
+        'test_connection_modal_description' => 'This will send a test request to the configured destination URL using sample data. No record will be saved.',
+
+        'retry_delivery_modal_heading' => 'Retry Delivery',
+        'retry_delivery_modal_description' => 'This will create a new delivery attempt.',
+
+        'details_modal_heading' => 'Delivery #',
     ],
 
     'notifications' => [
-        'created' => 'automation trigger created successfully.',
-        'updated' => 'automation trigger updated successfully.',
-        'deleted' => 'automation trigger deleted successfully.',
+        'created' => 'Automation trigger created successfully.',
+        'updated' => 'Automation trigger updated successfully.',
+        'deleted' => 'Automation trigger deleted successfully.',
         'activated' => 'Trigger activated',
         'deactivated' => 'Trigger deactivated',
         'duplicated' => 'Trigger duplicated',
@@ -113,11 +196,17 @@ return [
 
         'validation_error' => 'Validation Error',
         'fill_model_and_url' => 'Please fill in the Model and Destination URL before testing.',
+        'automation_sent' => 'Automation sent successfully',
+        'automation_queued' => 'Automation queued for delivery',
+        'connection_successful_title' => 'Connection successful',
+        'connection_failed_title' => 'Connection failed',
+        'template_saved' => 'Template saved',
+        'template_saved_body' => 'Saved as ":name"',
     ],
 
     'validation' => [
-        'trigger_not_found' => 'automation trigger not found.',
-        'trigger_not_active' => 'automation trigger is not active.',
+        'trigger_not_found' => 'Automation trigger not found.',
+        'trigger_not_active' => 'Automation trigger is not active.',
         'model_class_not_found' => 'Model class does not exist.',
         'sync_already_in_progress' => 'A historical sync is already in progress for this trigger.',
         'delivery_cannot_retry' => 'Delivery cannot be retried.',
@@ -160,8 +249,8 @@ return [
             'apply_conditions' => 'Apply conditions: :apply',
             'started' => 'Historical sync started. Batch UUID: :uuid',
             'check_progress' => 'Use `php artisan automation-bridge:sync-progress :uuid` to check progress.',
-            'not_found' => 'automation trigger with ID :id not found.',
-            'not_active' => 'automation trigger [:name] (ID: :id) is not active.',
+            'not_found' => 'Automation trigger with ID :id not found.',
+            'not_active' => 'Automation trigger [:name] (ID: :id) is not active.',
             'failed' => 'Failed to start sync: :error',
         ],
         'test' => [
@@ -222,6 +311,13 @@ return [
         'condition_logic' => [
             'and' => 'AND',
             'or' => 'OR',
+        ],
+        'http_methods' => [
+            'GET' => 'GET',
+            'POST' => 'POST',
+            'PUT' => 'PUT',
+            'PATCH' => 'PATCH',
+            'DELETE' => 'DELETE',
         ],
         'http_status_ranges' => [
             '2xx' => '2xx (Success)',

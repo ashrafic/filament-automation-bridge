@@ -17,7 +17,7 @@ Define triggers from your Filament admin panel and instantly connect to Zapier, 
 [![Packagist Version](https://img.shields.io/packagist/v/ashrafic/filament-automation-bridge?style=flat-square&color=blue&logo=packagist)](https://packagist.org/packages/ashrafic/filament-automation-bridge)
 [![Docs](https://img.shields.io/badge/docs-filament--automation--bridge-blue?style=flat-square&logo=readthedocs)](https://docs.ashraficlabs.com/filament-automation-bridge)
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2-777bb4?style=flat-square&logo=php&logoColor=white)](https://php.net)
-[![Filament](https://img.shields.io/badge/filament-%5E5.0-fbbf24?style=flat-square&logo=laravel)](https://filamentphp.com)
+[![Filament](https://img.shields.io/badge/filament-%5E4.0%20%7C%7C%20%5E5.0-fbbf24?style=flat-square&logo=laravel)](https://filamentphp.com)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square&logo=open-source-initiative)](LICENSE.md)
 
 ---
@@ -130,11 +130,23 @@ Full documentation at **[docs.ashraficlabs.com/filament-automation-bridge](https
 
 ---
 
+## Translations
+
+The UI is fully translatable. Publish the language files:
+
+```bash
+php artisan vendor:publish --tag=filament-automation-bridge-translations
+```
+
+Files are published to `resources/lang/vendor/filament-automation-bridge/`.
+
+---
+
 ## Requirements
 
 - PHP 8.2+
 - Laravel 11+
-- Filament v5.x
+- Filament v4.x / v5.x
 
 ---
 

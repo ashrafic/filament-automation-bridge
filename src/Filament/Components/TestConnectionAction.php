@@ -16,20 +16,20 @@ class TestConnectionAction
     public static function make(): Action
     {
         return Action::make('test_connection')
-            ->label('Test Connection')
+            ->label(__('filament-automation-bridge::automation-bridge.actions.test_connection'))
             ->icon('heroicon-o-signal')
             ->color('warning')
             ->requiresConfirmation()
-            ->modalHeading('Test Connection')
-            ->modalDescription('This will send a test request to the configured destination URL using sample data. No record will be saved.')
+            ->modalHeading(__('filament-automation-bridge::automation-bridge.actions.test_connection_modal_heading'))
+            ->modalDescription(__('filament-automation-bridge::automation-bridge.actions.test_connection_modal_description'))
             ->action(function (Get $get) {
                 $modelClass = $get('model_class');
                 $destinationUrl = $get('destination_url');
 
                 if (blank($modelClass) || blank($destinationUrl)) {
                     Notification::make()
-                        ->title('Validation Error')
-                        ->body('Please fill in the Model and Destination URL before testing.')
+                        ->title(__('filament-automation-bridge::automation-bridge.notifications.validation_error'))
+                        ->body(__('filament-automation-bridge::automation-bridge.notifications.fill_model_and_url'))
                         ->danger()
                         ->send();
 
@@ -59,7 +59,7 @@ class TestConnectionAction
                         $duration = $result['duration_ms'] ? " ({$result['duration_ms']}ms)" : '';
 
                         Notification::make()
-                            ->title('Connection Successful')
+                            ->title(__('filament-automation-bridge::automation-bridge.notifications.connection_successful'))
                             ->body("HTTP {$result['http_status']}{$duration}")
                             ->success()
                             ->send();
@@ -68,7 +68,7 @@ class TestConnectionAction
                         $error = $result['error'] ? ": {$result['error']}" : '';
 
                         Notification::make()
-                            ->title('Connection Failed')
+                            ->title(__('filament-automation-bridge::automation-bridge.notifications.connection_failed'))
                             ->body("{$status}{$error}")
                             ->danger()
                             ->duration(10000)
@@ -76,7 +76,7 @@ class TestConnectionAction
                     }
                 } catch (\Throwable $e) {
                     Notification::make()
-                        ->title('Test Failed')
+                        ->title(__('filament-automation-bridge::automation-bridge.notifications.test_failed'))
                         ->body($e->getMessage())
                         ->danger()
                         ->duration(10000)

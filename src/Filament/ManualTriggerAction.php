@@ -16,11 +16,11 @@ class ManualTriggerAction extends Action
 
         $this
             ->icon('heroicon-o-paper-airplane')
-            ->label('Send Automation')
+            ->label(__('filament-automation-bridge::automation-bridge.actions.send_automation'))
             ->color('success')
             ->form(fn () => [
                 Select::make('trigger_id')
-                    ->label('Select Automation Trigger')
+                    ->label(__('filament-automation-bridge::automation-bridge.actions.select_automation_trigger'))
                     ->options(function () {
                         $record = $this->getRecord();
                         if (! $record) {
@@ -48,7 +48,7 @@ class ManualTriggerAction extends Action
                 $delivery = $deliveryService->dispatchForManualTrigger($trigger, $record);
 
                 Notification::make()
-                    ->title($delivery ? 'Automation sent successfully' : 'Automation queued for delivery')
+                    ->title($delivery ? __('filament-automation-bridge::automation-bridge.notifications.automation_sent') : __('filament-automation-bridge::automation-bridge.notifications.automation_queued'))
                     ->success()
                     ->send();
             })
