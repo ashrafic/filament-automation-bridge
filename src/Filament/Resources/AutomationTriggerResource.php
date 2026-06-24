@@ -227,16 +227,6 @@ class AutomationTriggerResource extends Resource
                                 ->maxLength(2048)
                                 ->placeholder('https://hooks.zapier.com/...')
                                 ->helperText('Paste the webhook URL from your automation platform'),
-                            Forms\Components\Select::make('trigger_config.n8n_auth_mode')
-                                ->label('n8n Auth Mode')
-                                ->options([
-                                    'header' => 'API Key (Header Auth)',
-                                    'basic' => 'Basic Auth (username:password)',
-                                    'bearer' => 'Bearer Token',
-                                ])
-                                ->default('header')
-                                ->visible(fn (Get $get) => $get('destination_type')?->value === 'n8n')
-                                ->helperText('How the secret will be sent. Set to None by leaving secret blank.'),
                             Forms\Components\Select::make('payload_mode')
                                 ->label('Payload Mode')
                                 ->options(PayloadMode::class)
@@ -343,6 +333,22 @@ class AutomationTriggerResource extends Resource
 
                                 return 'HMAC secret for payload signing (auto-generated if empty)';
                             }),
+                        Forms\Components\Select::make('trigger_config.n8n_auth_mode')
+                            ->label('n8n Auth Mode')
+                            ->options([
+                                'header' => 'API Key (Header Auth)',
+                                'basic' => 'Basic Auth (username:password)',
+                                'bearer' => 'Bearer Token',
+                            ])
+                            ->default('header')
+                            ->live()
+                            ->visible(fn (Get $get) => $get('destination_type')?->value === 'n8n')
+                            ->helperText('How the secret will be sent. Set to None by leaving secret blank.'),
+                        Forms\Components\TextInput::make('trigger_config.n8n_header_name')
+                            ->label('Header Name')
+                            ->default('X-Api-Key')
+                            ->visible(fn (Get $get) => in_array($get('trigger_config.n8n_auth_mode'), ['header', null]) && $get('destination_type')?->value === 'n8n')
+                            ->helperText('Custom header name for Header Auth (e.g. X-Api-Key, Authorization)'),
                         Forms\Components\TextInput::make('request_timeout')
                             ->label('Timeout (seconds)')
                             ->numeric()

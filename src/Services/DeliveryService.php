@@ -58,7 +58,7 @@ class DeliveryService
 
         $payload['context'] = array_merge($payload['context'] ?? [], $context);
 
-        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null, $trigger->trigger_config['n8n_header_name'] ?? null);
 
         $httpMethod = $trigger->http_method ?? 'POST';
 
@@ -182,7 +182,7 @@ class DeliveryService
             return null;
         }
 
-        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null, $trigger->trigger_config['n8n_header_name'] ?? null);
 
         $httpMethod = $trigger->http_method ?? 'POST';
 
@@ -430,7 +430,7 @@ class DeliveryService
     {
         $payload = $this->payloadBuilder->buildSample($trigger);
 
-        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null, $trigger->trigger_config['n8n_header_name'] ?? null);
 
         $allHeaders = array_merge([
             'Content-Type' => 'application/json',

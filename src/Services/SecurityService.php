@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class SecurityService
 {
-    public function sign(array $payload, ?string $secret, ?DestinationType $destinationType = null, ?string $n8nAuthMode = null): array
+    public function sign(array $payload, ?string $secret, ?DestinationType $destinationType = null, ?string $n8nAuthMode = null, ?string $n8nHeaderName = null): array
     {
         if ($secret === null) {
             return [];
@@ -24,7 +24,7 @@ class SecurityService
         }
 
         if ($destinationType === DestinationType::N8n) {
-            return $this->signForN8n($secret, $n8nAuthMode);
+            return $this->signForN8n($secret, $n8nAuthMode, $n8nHeaderName);
         }
 
         $timestamp = time();
@@ -40,7 +40,7 @@ class SecurityService
         ];
     }
 
-    protected function signForN8n(string $secret, ?string $authMode): array
+    protected function signForN8n(string $secret, ?string $authMode, ?string $headerName): array
     {
         return match ($authMode) {
             'basic' => [
@@ -50,7 +50,7 @@ class SecurityService
                 'Authorization' => 'Bearer '.$secret,
             ],
             default => [
-                'X-Api-Key' => $secret,
+                $headerName ?: 'X-Api-Key' => $secret,
             ],
         };
     }
@@ -149,7 +149,7 @@ class SecurityService
     public function buildHeaders(AutomationTrigger $trigger, AutomationDelivery $delivery): array
     {
         $payload = $delivery->payload ?? [];
-        $signHeaders = $this->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
+        $signHeaders = $this->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null, $trigger->trigger_config['n8n_header_name'] ?? null);
 
         $headers = [
             'Content-Type' => 'application/json',

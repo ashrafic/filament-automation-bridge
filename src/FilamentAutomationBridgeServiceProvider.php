@@ -43,10 +43,10 @@ class FilamentAutomationBridgeServiceProvider extends PackageServiceProvider
             ->name('filament-automation-bridge')
             ->hasConfigFile()
             ->hasMigrations([
-                'create_automation_triggers_table',
-                'create_automation_deliveries_table',
-                'create_automation_templates_table',
-                'add_trigger_type_to_automation_triggers_table',
+                '0000_00_00_000000_create_automation_triggers_table',
+                '0000_00_00_000001_create_automation_deliveries_table',
+                '0000_00_00_000002_create_automation_templates_table',
+                '0000_00_00_000003_add_trigger_type_to_automation_triggers_table',
             ])
             ->hasCommands([
                 InstallCommand::class,

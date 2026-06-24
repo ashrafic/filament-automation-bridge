@@ -31,7 +31,23 @@ abstract class TestCase extends BaseTestCase
 
     protected function defineDatabaseMigrations(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $stubsPath = __DIR__.'/../database/migrations';
+        $tempPath = sys_get_temp_dir().'/fab-migrations-'.md5(__DIR__);
+
+        if (! is_dir($tempPath)) {
+            mkdir($tempPath, 0755, true);
+        }
+
+        foreach (glob($tempPath.'/*.php') as $file) {
+            unlink($file);
+        }
+
+        foreach (glob($stubsPath.'/*.php.stub') as $stub) {
+            $dest = $tempPath.'/'.str_replace('.php.stub', '.php', basename($stub));
+            copy($stub, $dest);
+        }
+
+        $this->loadMigrationsFrom($tempPath);
     }
 
     protected function setUp(): void
