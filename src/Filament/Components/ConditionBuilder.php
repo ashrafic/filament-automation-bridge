@@ -47,7 +47,7 @@ class ConditionBuilder extends Repeater
         parent::setUp();
 
         $this
-            ->label('Conditions')
+            ->label(__('filament-automation-bridge::automation-bridge.form.conditions'))
             ->maxItems(10)
             ->collapsible()
             ->collapsed(fn ($state) => empty($state))
@@ -55,7 +55,7 @@ class ConditionBuilder extends Repeater
             ->columns(2)
             ->schema([
                 Select::make('field')
-                    ->label('Field')
+                    ->label(__('filament-automation-bridge::automation-bridge.form.condition_field'))
                     ->required()
                     ->options(function (Get $get, ConditionBuilder $component) {
                         $modelClass = $component->getModelClass();
@@ -74,7 +74,7 @@ class ConditionBuilder extends Repeater
                             ->toArray();
                     }),
                 Select::make('operator')
-                    ->label('Operator')
+                    ->label(__('filament-automation-bridge::automation-bridge.form.condition_operator'))
                     ->required()
                     ->options(function (ConditionBuilder $component) {
                         $registry = app(ConditionRegistry::class);
@@ -108,7 +108,7 @@ class ConditionBuilder extends Repeater
                         }
                     }),
                 TextInput::make('value')
-                    ->label('Value')
+                    ->label(__('filament-automation-bridge::automation-bridge.form.condition_value'))
                     ->visible(function (Get $get) {
                         $operatorKey = $get('operator');
 
@@ -125,10 +125,10 @@ class ConditionBuilder extends Repeater
                         }
                     }),
                 Select::make('logic')
-                    ->label('Logic')
+                    ->label(__('filament-automation-bridge::automation-bridge.form.condition_logic'))
                     ->options([
-                        'and' => 'AND',
-                        'or' => 'OR',
+                        'and' => __('filament-automation-bridge::automation-bridge.enums.condition_logic.and'),
+                        'or' => __('filament-automation-bridge::automation-bridge.enums.condition_logic.or'),
                     ])
                     ->default('and')
                     ->visible(fn (string $context) => $context === 'edit'),

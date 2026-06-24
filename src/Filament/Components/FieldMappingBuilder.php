@@ -31,7 +31,7 @@ class FieldMappingBuilder extends Component
 
         $this->schema([
             CheckboxList::make('field_mapping')
-                ->label('Fields')
+                ->label(__('filament-automation-bridge::automation-bridge.form.field_mapping'))
                 ->columns(2)
                 ->searchable()
                 ->bulkToggleable()
@@ -51,8 +51,8 @@ class FieldMappingBuilder extends Component
                 ->columnSpanFull(),
 
             Placeholder::make('no_model_selected')
-                ->label('No Model Selected')
-                ->content('Select a model first to configure field mapping.')
+                ->label(__('filament-automation-bridge::automation-bridge.form.no_model_selected'))
+                ->content(__('filament-automation-bridge::automation-bridge.form.select_model_first'))
                 ->visible(fn (Get $get, FieldMappingBuilder $component) => blank($component->getModelClass())),
         ]);
     }
@@ -76,7 +76,7 @@ class FieldMappingBuilder extends Component
                 $relatedAttrs = $relation['attributes'] ?? [];
 
                 $wildcardKey = "{$fullPrefix}.*";
-                $options[$wildcardKey] = "{$fullPrefix}.* (all fields)";
+                $options[$wildcardKey] = $fullPrefix.'.*'.__('filament-automation-bridge::automation-bridge.form.all_fields');
 
                 foreach ($relatedAttrs as $attr) {
                     $attrName = is_array($attr) ? $attr['name'] : $attr;

@@ -22,7 +22,7 @@ class ListAutomationTemplates extends Page implements HasTable
 
     public static function getNavigationGroup(): string | \UnitEnum | null
     {
-        return 'Automation Bridge';
+        return __('filament-automation-bridge::automation-bridge.navigation.group');
     }
 
     public static function getNavigationIcon(): string | \BackedEnum | \Illuminate\Contracts\Support\Htmlable | null
@@ -32,17 +32,17 @@ class ListAutomationTemplates extends Page implements HasTable
 
     public static function getNavigationLabel(): string
     {
-        return 'Templates';
+        return __('filament-automation-bridge::automation-bridge.navigation.templates');
     }
 
     public static function getModelLabel(): string
     {
-        return 'Template';
+        return __('filament-automation-bridge::automation-bridge.labels.template');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return 'Templates';
+        return __('filament-automation-bridge::automation-bridge.labels.templates');
     }
 
     public static function canAccess(): bool
@@ -63,26 +63,26 @@ class ListAutomationTemplates extends Page implements HasTable
                     ->limit(50)
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('model_class')
-                    ->label('Model')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.model'))
                     ->formatStateUsing(fn ($state) => class_basename($state))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('event')
-                    ->label('Event')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.event'))
                     ->badge()
                     ->formatStateUsing(fn ($state) => $state->getLabel()),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label(__('filament-automation-bridge::automation-bridge.table.created_at'))
                     ->dateTime()
                     ->sortable(),
             ])
             ->actions([
                 Actions\Action::make('apply')
-                    ->label('Use Template')
+                    ->label(__('filament-automation-bridge::automation-bridge.actions.use_template'))
                     ->icon('heroicon-o-document-plus')
                     ->url(fn (AutomationTemplate $record) => AutomationTriggerResource::getUrl('create', ['template_id' => $record->id])),
                 Actions\DeleteAction::make(),
             ])
-            ->emptyStateHeading('No templates yet')
-            ->emptyStateDescription('Save a trigger configuration as a template from the Edit or View page.');
+            ->emptyStateHeading(__('filament-automation-bridge::automation-bridge.table.empty_templates_heading'))
+            ->emptyStateDescription(__('filament-automation-bridge::automation-bridge.table.empty_templates_description'));
     }
 }
