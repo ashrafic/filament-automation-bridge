@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 
 class SecurityService
 {
-    public function sign(array $payload, ?string $secret, ?DestinationType $destinationType = null): array
+    public function sign(array $payload, ?string $secret, ?DestinationType $destinationType = null, ?string $n8nAuthMode = null): array
     {
         if ($secret === null) {
             return [];
@@ -21,6 +21,10 @@ class SecurityService
             return [
                 'x-make-apikey' => $secret,
             ];
+        }
+
+        if ($destinationType === DestinationType::N8n) {
+            return $this->signForN8n($secret, $n8nAuthMode);
         }
 
         $timestamp = time();
@@ -34,6 +38,21 @@ class SecurityService
             'X-Automation-Signature' => 'sha256='.$signature,
             'X-Automation-Timestamp' => (string) $timestamp,
         ];
+    }
+
+    protected function signForN8n(string $secret, ?string $authMode): array
+    {
+        return match ($authMode) {
+            'basic' => [
+                'Authorization' => 'Basic '.base64_encode($secret),
+            ],
+            'bearer' => [
+                'Authorization' => 'Bearer '.$secret,
+            ],
+            default => [
+                'X-Api-Key' => $secret,
+            ],
+        };
     }
 
     public function validateUrl(string $url): void
@@ -130,7 +149,7 @@ class SecurityService
     public function buildHeaders(AutomationTrigger $trigger, AutomationDelivery $delivery): array
     {
         $payload = $delivery->payload ?? [];
-        $signHeaders = $this->sign($payload, $trigger->secret, $trigger->destination_type);
+        $signHeaders = $this->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
 
         $headers = [
             'Content-Type' => 'application/json',

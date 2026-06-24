@@ -41,10 +41,12 @@ class TestConnectionAction
                 $trigger->event = EventEnum::tryFrom($get('event') ?? 'created') ?? EventEnum::Created;
                 $trigger->destination_type = DestinationType::tryFrom($get('destination_type') ?? 'custom') ?? DestinationType::Custom;
                 $trigger->destination_url = $destinationUrl;
+                $trigger->http_method = $get('http_method') ?? 'POST';
                 $trigger->payload_mode = PayloadMode::tryFrom($get('payload_mode') ?? 'summary') ?? PayloadMode::Summary;
                 $trigger->field_mapping = $get('field_mapping') ?? [];
                 $trigger->custom_payload_template = $get('custom_payload_template') ?? '';
                 $trigger->secret = $get('secret') ?? '';
+                $trigger->trigger_config = $get('trigger_config') ?? [];
                 $trigger->request_timeout = $get('request_timeout') ?? 30;
                 $trigger->max_retries = 0;
                 $trigger->id = 0;

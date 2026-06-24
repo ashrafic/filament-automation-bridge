@@ -76,6 +76,7 @@ class AutomationTriggerResource extends Resource
                                 ->searchable()
                                 ->required()
                                 ->live()
+                                ->disabled(fn (string $operation) => $operation === 'edit' && ! request()->boolean('duplicate'))
                                 ->placeholder('Choose a model...')
                                 ->helperText('The Eloquent model to watch for events'),
                             Forms\Components\Select::make('trigger_type')
@@ -226,6 +227,16 @@ class AutomationTriggerResource extends Resource
                                 ->maxLength(2048)
                                 ->placeholder('https://hooks.zapier.com/...')
                                 ->helperText('Paste the webhook URL from your automation platform'),
+                            Forms\Components\Select::make('trigger_config.n8n_auth_mode')
+                                ->label('n8n Auth Mode')
+                                ->options([
+                                    'header' => 'API Key (Header Auth)',
+                                    'basic' => 'Basic Auth (username:password)',
+                                    'bearer' => 'Bearer Token',
+                                ])
+                                ->default('header')
+                                ->visible(fn (Get $get) => $get('destination_type')?->value === 'n8n')
+                                ->helperText('How the secret will be sent. Set to None by leaving secret blank.'),
                             Forms\Components\Select::make('payload_mode')
                                 ->label('Payload Mode')
                                 ->options(PayloadMode::class)
@@ -279,13 +290,33 @@ class AutomationTriggerResource extends Resource
                             ->label('Active')
                             ->default(true)
                             ->helperText('Enable or disable this automation'),
+                        Forms\Components\Select::make('http_method')
+                            ->label('HTTP Method')
+                            ->options([
+                                'GET' => 'GET',
+                                'POST' => 'POST',
+                                'PUT' => 'PUT',
+                                'PATCH' => 'PATCH',
+                                'DELETE' => 'DELETE',
+                            ])
+                            ->default('POST')
+                            ->required()
+                            ->helperText('The HTTP method used to send data to the webhook'),
                         Forms\Components\TextInput::make('secret')
                             ->password()
                             ->revealable()
                             ->maxLength(255)
                             ->dehydrated(fn ($state) => filled($state))
                             ->placeholder('Auto-generated if left blank')
-                            ->helperText('HMAC secret for payload signing'),
+                            ->helperText(function (Get $get) {
+                                $type = $get('destination_type');
+
+                                return match ($type?->value ?? '') {
+                                    'make' => 'Your Make.com API key sent via x-make-apikey header',
+                                    'n8n' => 'API key, username:password (Basic), or Bearer token',
+                                    default => 'HMAC secret for payload signing',
+                                };
+                            }),
                         Forms\Components\TextInput::make('request_timeout')
                             ->label('Timeout (seconds)')
                             ->numeric()
@@ -407,7 +438,7 @@ class AutomationTriggerResource extends Resource
                 Actions\Action::make('duplicate')
                     ->icon('heroicon-o-document-duplicate')
                     ->requiresConfirmation()
-                    ->action(function (AutomationTrigger $record) {
+                    ->action(function (AutomationTrigger $record, Actions\Action $action) {
                         $replica = $record->replicate();
                         $replica->name = $record->name.' (Copy)';
                         $replica->active = false;
@@ -418,6 +449,8 @@ class AutomationTriggerResource extends Resource
                             ->title('Trigger duplicated')
                             ->success()
                             ->send();
+
+                        return redirect(static::getUrl('edit', ['record' => $replica]).'?duplicate=1');
                     }),
                 Actions\Action::make('view_logs')
                     ->label('Delivery Logs')

@@ -58,7 +58,9 @@ class DeliveryService
 
         $payload['context'] = array_merge($payload['context'] ?? [], $context);
 
-        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
+
+        $httpMethod = $trigger->http_method ?? 'POST';
 
         $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
@@ -66,6 +68,7 @@ class DeliveryService
             'model_id' => $model->getKey(),
             'payload' => $payload,
             'headers' => $headers,
+            'http_method' => $httpMethod,
             'status' => DeliveryStatus::Pending,
             'retry_count' => 0,
             'max_retries' => $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
@@ -110,6 +113,7 @@ class DeliveryService
             $trigger->request_timeout ?? 30,
             $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
             $delivery->uuid,
+            $httpMethod,
         )->onQueue($queue)->onConnection($connection);
 
         AutomationDispatched::dispatch($delivery);
@@ -178,7 +182,9 @@ class DeliveryService
             return null;
         }
 
-        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
+
+        $httpMethod = $trigger->http_method ?? 'POST';
 
         $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
@@ -186,6 +192,7 @@ class DeliveryService
             'model_id' => $model->getKey(),
             'payload' => $payload,
             'headers' => $headers,
+            'http_method' => $httpMethod,
             'status' => DeliveryStatus::Pending,
             'retry_count' => 0,
             'max_retries' => $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
@@ -230,6 +237,7 @@ class DeliveryService
             $trigger->request_timeout ?? 30,
             $trigger->max_retries ?? config('filament-automation-bridge.retry.default_max_attempts', 3),
             $delivery->uuid,
+            $httpMethod,
         )->onQueue($queue)->onConnection($connection);
 
         AutomationDispatched::dispatch($delivery);
@@ -354,12 +362,15 @@ class DeliveryService
 
         $trigger = $delivery->trigger;
 
+        $httpMethod = $trigger->http_method ?? $delivery->http_method ?? 'POST';
+
         $newDelivery = AutomationDelivery::create([
             'trigger_id' => $delivery->trigger_id,
             'model_type' => $delivery->model_type,
             'model_id' => $delivery->model_id,
             'payload' => $delivery->payload,
             'headers' => $delivery->headers,
+            'http_method' => $httpMethod,
             'status' => DeliveryStatus::Pending,
             'retry_count' => $delivery->retry_count + 1,
             'max_retries' => $delivery->max_retries,
@@ -379,6 +390,7 @@ class DeliveryService
             $trigger->request_timeout ?? 30,
             $newDelivery->max_retries,
             $newDelivery->uuid,
+            $httpMethod,
         )->onQueue($queue)->onConnection($connection);
 
         return $newDelivery;
@@ -418,7 +430,7 @@ class DeliveryService
     {
         $payload = $this->payloadBuilder->buildSample($trigger);
 
-        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type);
+        $headers = $this->securityService->sign($payload, $trigger->secret, $trigger->destination_type, $trigger->trigger_config['n8n_auth_mode'] ?? null);
 
         $allHeaders = array_merge([
             'Content-Type' => 'application/json',
@@ -428,12 +440,15 @@ class DeliveryService
             'Accept' => 'application/json',
         ], $headers);
 
+        $httpMethod = $trigger->http_method ?? 'POST';
+
         $delivery = AutomationDelivery::create([
             'trigger_id' => $trigger->id,
             'model_type' => $trigger->model_class,
             'model_id' => null,
             'payload' => $payload,
             'headers' => $headers,
+            'http_method' => $httpMethod,
             'status' => DeliveryStatus::Pending,
             'retry_count' => 0,
             'max_retries' => 0,
@@ -451,7 +466,7 @@ class DeliveryService
         try {
             $client = new Client(['timeout' => 30]);
 
-            $response = $client->post($trigger->destination_url, [
+            $response = $client->request(strtolower($httpMethod), $trigger->destination_url, [
                 'json' => $payload,
                 'headers' => $allHeaders,
             ]);

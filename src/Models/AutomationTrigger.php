@@ -29,6 +29,7 @@ class AutomationTrigger extends Model
         'trigger_config',
         'destination_type',
         'destination_url',
+        'http_method',
         'field_mapping',
         'payload_mode',
         'custom_payload_template',

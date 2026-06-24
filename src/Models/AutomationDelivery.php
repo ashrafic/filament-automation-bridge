@@ -23,6 +23,7 @@ class AutomationDelivery extends Model
         'response_headers',
         'status',
         'http_status',
+        'http_method',
         'response_body',
         'retry_count',
         'max_retries',
