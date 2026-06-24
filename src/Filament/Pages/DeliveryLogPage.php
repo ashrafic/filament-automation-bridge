@@ -28,7 +28,7 @@ class DeliveryLogPage extends Page implements HasTable
 
     public static function getNavigationGroup(): string | \UnitEnum | null
     {
-        return config('filament-automation-bridge.ui.navigation_group', 'Integrations');
+        return 'Automation Bridge';
     }
 
     public static function getNavigationIcon(): string | \BackedEnum | \Illuminate\Contracts\Support\Htmlable | null
