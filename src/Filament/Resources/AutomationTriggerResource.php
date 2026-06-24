@@ -307,15 +307,41 @@ class AutomationTriggerResource extends Resource
                             ->revealable()
                             ->maxLength(255)
                             ->dehydrated(fn ($state) => filled($state))
-                            ->placeholder('Auto-generated if left blank')
+                            ->placeholder(function (Get $get) {
+                                $type = $get('destination_type');
+                                $n8nMode = $get('trigger_config.n8n_auth_mode');
+
+                                if ($type?->value === 'make') {
+                                    return 'sk-...';
+                                }
+
+                                if ($type?->value === 'n8n') {
+                                    return match ($n8nMode) {
+                                        'basic' => 'username:password',
+                                        'bearer' => 'eyJhbGci...',
+                                        default => 'x-api-key-abc123',
+                                    };
+                                }
+
+                                return 'Auto-generated if left blank';
+                            })
                             ->helperText(function (Get $get) {
                                 $type = $get('destination_type');
+                                $n8nMode = $get('trigger_config.n8n_auth_mode');
 
-                                return match ($type?->value ?? '') {
-                                    'make' => 'Your Make.com API key sent via x-make-apikey header',
-                                    'n8n' => 'API key, username:password (Basic), or Bearer token',
-                                    default => 'HMAC secret for payload signing',
-                                };
+                                if ($type?->value === 'make') {
+                                    return 'Your Make.com API key — sent as x-make-apikey header';
+                                }
+
+                                if ($type?->value === 'n8n') {
+                                    return match ($n8nMode) {
+                                        'basic' => 'Format: username:password — sent as Basic auth',
+                                        'bearer' => 'Your JWT or Bearer token — sent as Authorization: Bearer',
+                                        default => 'Your API key — sent as X-Api-Key header',
+                                    };
+                                }
+
+                                return 'HMAC secret for payload signing (auto-generated if empty)';
                             }),
                         Forms\Components\TextInput::make('request_timeout')
                             ->label('Timeout (seconds)')
