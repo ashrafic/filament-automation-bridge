@@ -1,29 +1,29 @@
-<div class="space-y-6" x-on:click.stop="">
+<div class="space-y-6 min-w-0" x-on:click.stop="">
     @if($record->payload)
         <x-filament::section>
             <x-slot name="heading">Request Payload</x-slot>
-            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950">{{ json_encode($record->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed text-green-400 dark:bg-gray-950" style="white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word;">{{ json_encode($record->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 
     @if($record->headers)
         <x-filament::section>
             <x-slot name="heading">Request Headers</x-slot>
-            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950">{{ json_encode($record->headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed text-green-400 dark:bg-gray-950" style="white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word;">{{ json_encode($record->headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 
     @if($record->response_body)
         <x-filament::section>
             <x-slot name="heading">Response Body</x-slot>
-            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950">{{ is_string($record->response_body) ? $record->response_body : json_encode($record->response_body, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed text-green-400 dark:bg-gray-950" style="white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word;">{{ is_string($record->response_body) ? $record->response_body : json_encode($record->response_body, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 
     @if($record->response_headers)
         <x-filament::section>
             <x-slot name="heading">Response Headers</x-slot>
-            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed whitespace-pre-wrap break-all text-green-400 dark:bg-gray-950">{{ json_encode($record->response_headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+            <pre class="max-h-64 overflow-auto rounded-lg bg-gray-900 p-4 text-xs leading-relaxed text-green-400 dark:bg-gray-950" style="white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word;">{{ json_encode($record->response_headers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
         </x-filament::section>
     @endif
 

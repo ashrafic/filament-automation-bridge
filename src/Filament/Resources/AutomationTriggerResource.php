@@ -76,6 +76,7 @@ class AutomationTriggerResource extends Resource
                                 ->searchable()
                                 ->required()
                                 ->live()
+                                ->disabled(fn (string $operation) => $operation === 'edit' && ! request()->boolean('duplicate'))
                                 ->placeholder('Choose a model...')
                                 ->helperText('The Eloquent model to watch for events'),
                             Forms\Components\Select::make('trigger_type')
@@ -279,13 +280,75 @@ class AutomationTriggerResource extends Resource
                             ->label('Active')
                             ->default(true)
                             ->helperText('Enable or disable this automation'),
+                        Forms\Components\Select::make('http_method')
+                            ->label('HTTP Method')
+                            ->options([
+                                'GET' => 'GET',
+                                'POST' => 'POST',
+                                'PUT' => 'PUT',
+                                'PATCH' => 'PATCH',
+                                'DELETE' => 'DELETE',
+                            ])
+                            ->default('POST')
+                            ->required()
+                            ->helperText('The HTTP method used to send data to the webhook'),
                         Forms\Components\TextInput::make('secret')
                             ->password()
                             ->revealable()
                             ->maxLength(255)
                             ->dehydrated(fn ($state) => filled($state))
-                            ->placeholder('Auto-generated if left blank')
-                            ->helperText('HMAC secret for payload signing'),
+                            ->placeholder(function (Get $get) {
+                                $type = $get('destination_type');
+                                $n8nMode = $get('trigger_config.n8n_auth_mode');
+
+                                if ($type?->value === 'make') {
+                                    return 'sk-...';
+                                }
+
+                                if ($type?->value === 'n8n') {
+                                    return match ($n8nMode) {
+                                        'basic' => 'username:password',
+                                        'bearer' => 'eyJhbGci...',
+                                        default => 'x-api-key-abc123',
+                                    };
+                                }
+
+                                return 'Auto-generated if left blank';
+                            })
+                            ->helperText(function (Get $get) {
+                                $type = $get('destination_type');
+                                $n8nMode = $get('trigger_config.n8n_auth_mode');
+
+                                if ($type?->value === 'make') {
+                                    return 'Your Make.com API key — sent as x-make-apikey header';
+                                }
+
+                                if ($type?->value === 'n8n') {
+                                    return match ($n8nMode) {
+                                        'basic' => 'Format: username:password — sent as Basic auth',
+                                        'bearer' => 'Your JWT or Bearer token — sent as Authorization: Bearer',
+                                        default => 'Your API key — sent as X-Api-Key header',
+                                    };
+                                }
+
+                                return 'HMAC secret for payload signing (auto-generated if empty)';
+                            }),
+                        Forms\Components\Select::make('trigger_config.n8n_auth_mode')
+                            ->label('n8n Auth Mode')
+                            ->options([
+                                'header' => 'API Key (Header Auth)',
+                                'basic' => 'Basic Auth (username:password)',
+                                'bearer' => 'Bearer Token',
+                            ])
+                            ->default('header')
+                            ->live()
+                            ->visible(fn (Get $get) => $get('destination_type')?->value === 'n8n')
+                            ->helperText('How the secret will be sent. Set to None by leaving secret blank.'),
+                        Forms\Components\TextInput::make('trigger_config.n8n_header_name')
+                            ->label('Header Name')
+                            ->default('X-Api-Key')
+                            ->visible(fn (Get $get) => in_array($get('trigger_config.n8n_auth_mode'), ['header', null]) && $get('destination_type')?->value === 'n8n')
+                            ->helperText('Custom header name for Header Auth (e.g. X-Api-Key, Authorization)'),
                         Forms\Components\TextInput::make('request_timeout')
                             ->label('Timeout (seconds)')
                             ->numeric()
@@ -407,7 +470,7 @@ class AutomationTriggerResource extends Resource
                 Actions\Action::make('duplicate')
                     ->icon('heroicon-o-document-duplicate')
                     ->requiresConfirmation()
-                    ->action(function (AutomationTrigger $record) {
+                    ->action(function (AutomationTrigger $record, Actions\Action $action) {
                         $replica = $record->replicate();
                         $replica->name = $record->name.' (Copy)';
                         $replica->active = false;
@@ -418,6 +481,8 @@ class AutomationTriggerResource extends Resource
                             ->title('Trigger duplicated')
                             ->success()
                             ->send();
+
+                        return redirect(static::getUrl('edit', ['record' => $replica]).'?duplicate=1');
                     }),
                 Actions\Action::make('view_logs')
                     ->label('Delivery Logs')

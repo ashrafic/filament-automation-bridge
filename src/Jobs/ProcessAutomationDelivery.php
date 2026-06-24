@@ -31,6 +31,7 @@ class ProcessAutomationDelivery implements ShouldQueue
         public int $requestTimeout,
         public int $maxRetries,
         public string $deliveryUuid,
+        public string $httpMethod = 'POST',
         public bool $checkActive = true,
     ) {
         $this->tries = $this->maxRetries + 1;
@@ -86,7 +87,7 @@ class ProcessAutomationDelivery implements ShouldQueue
                 'http_errors' => false,
             ]);
 
-            $response = $client->post($this->destinationUrl, [
+            $response = $client->request(strtolower($this->httpMethod), $this->destinationUrl, [
                 'json' => $this->payload,
                 'headers' => $allHeaders,
             ]);
