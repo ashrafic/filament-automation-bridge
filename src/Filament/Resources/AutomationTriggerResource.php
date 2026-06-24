@@ -30,9 +30,11 @@ class AutomationTriggerResource extends Resource
 {
     protected static ?string $model = AutomationTrigger::class;
 
+    protected static ?string $slug = 'automation-bridge/triggers';
+
     public static function getNavigationGroup(): string | \UnitEnum | null
     {
-        return config('filament-automation-bridge.ui.navigation_group', 'Integrations');
+        return 'Automation Bridge';
     }
 
     public static function getNavigationIcon(): string | \BackedEnum | \Illuminate\Contracts\Support\Htmlable | null

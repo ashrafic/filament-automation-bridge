@@ -30,12 +30,10 @@ class InstallCommand extends Command
         $this->line('<fg=yellow>Next steps:</>');
         $this->line('  1. Run the migrations:');
         $this->line('     php artisan migrate');
-        $this->line('  2. Seed the built-in templates:');
-        $this->line('     php artisan automation-bridge:seed');
-        $this->line('  3. Add the plugin to your PanelProvider:');
+        $this->line('  2. Add the plugin to your PanelProvider:');
         $this->line('     ->plugin(\\Ashrafic\\FilamentAutomationBridge\\FilamentAutomationBridgePlugin::make())');
-        $this->line('  4. Start a queue worker for automation delivery:');
-        $this->line('     php artisan queue:work --queue=webhooks');
+        $this->line('  3. Start a queue worker for automation delivery:');
+        $this->line('     php artisan queue:work');
 
         return self::SUCCESS;
     }
