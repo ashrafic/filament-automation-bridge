@@ -130,18 +130,6 @@ Full documentation at **[docs.ashraficlabs.com/filament-automation-bridge](https
 
 ---
 
-## Translations
-
-The UI is fully translatable. Publish the language files:
-
-```bash
-php artisan vendor:publish --tag=filament-automation-bridge-translations
-```
-
-Files are published to `resources/lang/vendor/filament-automation-bridge/`.
-
----
-
 ## Requirements
 
 - PHP 8.2+

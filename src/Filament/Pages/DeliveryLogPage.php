@@ -28,7 +28,7 @@ class DeliveryLogPage extends Page implements HasTable
 
     public static function getNavigationGroup(): string | \UnitEnum | null
     {
-        return __('filament-automation-bridge::automation-bridge.navigation.group');
+        return __('filament-automation-bridge::navigation.group');
     }
 
     public static function getNavigationIcon(): string | \BackedEnum | \Illuminate\Contracts\Support\Htmlable | null
@@ -38,12 +38,12 @@ class DeliveryLogPage extends Page implements HasTable
 
     public static function getModelLabel(): string
     {
-        return __('filament-automation-bridge::automation-bridge.labels.delivery');
+        return __('filament-automation-bridge::labels.delivery');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('filament-automation-bridge::automation-bridge.labels.deliveries');
+        return __('filament-automation-bridge::labels.deliveries');
     }
 
     public static function canAccess(): bool
@@ -57,14 +57,14 @@ class DeliveryLogPage extends Page implements HasTable
             ->query(AutomationDelivery::query()->with('trigger')->latest())
             ->columns([
                 Tables\Columns\TextColumn::make('trigger.name')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.trigger'))
+                    ->label(__('filament-automation-bridge::table.trigger'))
                     ->searchable()
                     ->sortable()
-                    ->placeholder(__('filament-automation-bridge::automation-bridge.table.na')),
+                    ->placeholder(__('filament-automation-bridge::table.na')),
                 Tables\Columns\TextColumn::make('model_type')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.model'))
+                    ->label(__('filament-automation-bridge::table.model'))
                     ->formatStateUsing(fn ($state) => class_basename($state))
-                    ->description(fn (AutomationDelivery $record) => __('filament-automation-bridge::automation-bridge.table.model_id').$record->model_id)
+                    ->description(fn (AutomationDelivery $record) => __('filament-automation-bridge::table.model_id').$record->model_id)
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
@@ -73,15 +73,15 @@ class DeliveryLogPage extends Page implements HasTable
                     ->formatStateUsing(fn (DeliveryStatus $state) => $state->getLabel())
                     ->sortable(),
                 Tables\Columns\TextColumn::make('http_status')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.response'))
+                    ->label(__('filament-automation-bridge::table.response'))
                     ->formatStateUsing(function (?int $state) {
                         if ($state === null) {
-                            return __('filament-automation-bridge::automation-bridge.table.na');
+                            return __('filament-automation-bridge::table.na');
                         }
 
                         return $state;
                     })
-                    ->description(fn (AutomationDelivery $record) => $record->duration_ms ? $record->duration_ms.__('filament-automation-bridge::automation-bridge.table.duration_ms') : null)
+                    ->description(fn (AutomationDelivery $record) => $record->duration_ms ? $record->duration_ms.__('filament-automation-bridge::table.duration_ms') : null)
                     ->color(function (?int $state) {
                         if ($state === null) {
                             return 'gray';
@@ -112,30 +112,30 @@ class DeliveryLogPage extends Page implements HasTable
                     })
                     ->formatStateUsing(fn (DeliverySource $state) => $state->getLabel()),
                 Tables\Columns\TextColumn::make('retry_count')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.retries'))
+                    ->label(__('filament-automation-bridge::table.retries'))
                     ->formatStateUsing(fn (AutomationDelivery $record) => "{$record->retry_count}/{$record->max_retries}")
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.delivered_at'))
+                    ->label(__('filament-automation-bridge::table.delivered_at'))
                     ->dateTime()
                     ->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('trigger_id')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.trigger'))
+                    ->label(__('filament-automation-bridge::table.trigger'))
                     ->relationship('trigger', 'name')
                     ->searchable()
                     ->preload(),
                 Tables\Filters\SelectFilter::make('status')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.status'))
+                    ->label(__('filament-automation-bridge::table.status'))
                     ->options(DeliveryStatus::class),
                 Tables\Filters\SelectFilter::make('http_status_range')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.http_status'))
+                    ->label(__('filament-automation-bridge::table.http_status'))
                     ->options([
-                        '2xx' => __('filament-automation-bridge::automation-bridge.enums.http_status_ranges.2xx'),
-                        '3xx' => __('filament-automation-bridge::automation-bridge.enums.http_status_ranges.3xx'),
-                        '4xx' => __('filament-automation-bridge::automation-bridge.enums.http_status_ranges.4xx'),
-                        '5xx' => __('filament-automation-bridge::automation-bridge.enums.http_status_ranges.5xx'),
+                        '2xx' => __('filament-automation-bridge::enums.http_status_ranges.2xx'),
+                        '3xx' => __('filament-automation-bridge::enums.http_status_ranges.3xx'),
+                        '4xx' => __('filament-automation-bridge::enums.http_status_ranges.4xx'),
+                        '5xx' => __('filament-automation-bridge::enums.http_status_ranges.5xx'),
                     ])
                     ->query(function (Builder $query, array $data) {
                         if (! filled($data['value'])) {
@@ -151,7 +151,7 @@ class DeliveryLogPage extends Page implements HasTable
                         };
                     }),
                 Tables\Filters\SelectFilter::make('source')
-                    ->label(__('filament-automation-bridge::automation-bridge.table.source'))
+                    ->label(__('filament-automation-bridge::table.source'))
                     ->options(DeliverySource::class),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
@@ -166,41 +166,41 @@ class DeliveryLogPage extends Page implements HasTable
             ])
             ->actions([
                 Actions\Action::make('retry')
-                    ->label(__('filament-automation-bridge::automation-bridge.actions.retry'))
+                    ->label(__('filament-automation-bridge::actions.retry'))
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->modalHeading(__('filament-automation-bridge::automation-bridge.actions.retry_delivery_modal_heading'))
-                    ->modalDescription(__('filament-automation-bridge::automation-bridge.actions.retry_delivery_modal_description'))
+                    ->modalHeading(__('filament-automation-bridge::actions.retry_delivery_modal_heading'))
+                    ->modalDescription(__('filament-automation-bridge::actions.retry_delivery_modal_description'))
                     ->visible(fn (AutomationDelivery $record) => $record->canRetry())
                     ->action(function (AutomationDelivery $record) {
                         try {
                             app(DeliveryService::class)->retry($record);
 
                             Notification::make()
-                                ->title(__('filament-automation-bridge::automation-bridge.notifications.retry_queued'))
+                                ->title(__('filament-automation-bridge::notifications.retry_queued'))
                                 ->success()
                                 ->send();
                         } catch (\Throwable $e) {
                             Notification::make()
-                                ->title(__('filament-automation-bridge::automation-bridge.notifications.retry_failed'))
+                                ->title(__('filament-automation-bridge::notifications.retry_failed'))
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
                     }),
                 Actions\Action::make('view_details')
-                    ->label(__('filament-automation-bridge::automation-bridge.actions.view_details'))
+                    ->label(__('filament-automation-bridge::actions.view_details'))
                     ->icon('heroicon-o-eye')
-                    ->modalHeading(fn (AutomationDelivery $record) => __('filament-automation-bridge::automation-bridge.actions.details_modal_heading').$record->id)
+                    ->modalHeading(fn (AutomationDelivery $record) => __('filament-automation-bridge::actions.details_modal_heading').$record->id)
                     ->modalContent(fn (AutomationDelivery $record) => view('filament-automation-bridge::pages.delivery-details', ['record' => $record]))
                     ->modalSubmitAction(false)
-                    ->modalCancelActionLabel(__('filament-automation-bridge::automation-bridge.actions.close'))
+                    ->modalCancelActionLabel(__('filament-automation-bridge::actions.close'))
                     ->slideOver(),
             ])
             ->toolbarActions([
                 Actions\BulkAction::make('bulk_retry')
-                    ->label(__('filament-automation-bridge::automation-bridge.actions.retry_selected'))
+                    ->label(__('filament-automation-bridge::actions.retry_selected'))
                     ->icon('heroicon-o-arrow-path')
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
@@ -208,7 +208,7 @@ class DeliveryLogPage extends Page implements HasTable
                         $queued = app(DeliveryService::class)->bulkRetry($ids);
 
                         Notification::make()
-                            ->title(__('filament-automation-bridge::automation-bridge.notifications.bulk_retry_queued', ['count' => $queued]))
+                            ->title(__('filament-automation-bridge::notifications.bulk_retry_queued', ['count' => $queued]))
                             ->success()
                             ->send();
                     }),
