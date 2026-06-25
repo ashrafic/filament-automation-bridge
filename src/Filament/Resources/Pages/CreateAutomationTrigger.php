@@ -28,11 +28,11 @@ class CreateAutomationTrigger extends CreateRecord
     {
         return [
             Action::make('create_from_template')
-                ->label(__('filament-automation-bridge::automation-bridge.actions.create_from_template'))
+                ->label(__('filament-automation-bridge::actions.create_from_template'))
                 ->icon('heroicon-o-bookmark')
                 ->form([
                     Select::make('template_id')
-                        ->label(__('filament-automation-bridge::automation-bridge.actions.template'))
+                        ->label(__('filament-automation-bridge::actions.template'))
                         ->options(
                             AutomationTemplate::orderBy('name')->pluck('name', 'id')
                         )
